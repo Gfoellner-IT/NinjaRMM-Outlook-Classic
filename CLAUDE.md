@@ -10,7 +10,7 @@ VBA has **no build or CI pipeline**. Exported `.bas`, `.cls`, `.frm`/`.frx` file
 
 This repository contains a standalone source snapshot with VBA automation and an initial .NET core. Use `README.md` for the current scope, `CHANGELOG.md` for completed changes, `ROADMAP.md` for open work, and `IMPORT.md` for upgrades.
 
-M9 is the migration to a C#/.NET Framework VSTO add-in for classic Outlook. The initial core and reference tests are under `dotnet/`; a VSTO host and installer do not yet exist. Architecture/toolchain details are in `docs/m9/architecture.md`. Define the target environment, functional scope, and deployment before claiming implementation. A Word VSTO pilot does not establish Outlook acceptance. New Outlook requires a separate architecture decision.
+M9 is the migration to a C#/.NET Framework VSTO add-in for classic Outlook. The core, infrastructure, reference tests, and a diagnostic VSTO host are under `dotnet/`; functional host integration and an installer remain open. Default builds do not register the add-in or change trust. See `docs/m9/development-host.md` before explicitly enabling development setup. Architecture/toolchain details are in `docs/m9/architecture.md`. Define the target environment, functional scope, and deployment before claiming implementation. A Word VSTO pilot does not establish Outlook acceptance. New Outlook requires a separate architecture decision.
 
 ## Language policy: en-US
 

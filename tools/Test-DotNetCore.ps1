@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-Builds and tests the initial host-independent M9 core. Never starts Office.
+Builds the M9 solution and tests the core/infrastructure. Never starts Office.
 .DESCRIPTION
 Default: Visual Studio MSBuild and .NET Framework 4.8 reference assemblies are required.
 -RuntimeOnly: limited syntax/behavior probe using the installed Framework compiler and runtime
@@ -20,9 +20,10 @@ if ($RuntimeOnly) {
     $sources = @(Get-ChildItem (Join-Path $repoRoot 'dotnet/NinjaRmm.Outlook.Core') -Filter '*.cs' -File | Sort-Object Name | ForEach-Object FullName)
     $library = Join-Path $output 'NinjaRmm.Outlook.Core.dll'
     $tests = Join-Path $output 'NinjaRmm.Outlook.Core.Tests.exe'
-    & $compiler /nologo /warn:4 /warnaserror+ /target:library "/out:$library" @sources
+    & $compiler /nologo /warn:4 /warnaserror+ /reference:System.Web.Extensions.dll /target:library "/out:$library" @sources
     if ($LASTEXITCODE) { throw 'Core diagnostic compilation failed.' }
-    & $compiler /nologo /warn:4 /warnaserror+ /target:exe "/reference:$library" "/out:$tests" (Join-Path $repoRoot 'dotnet/NinjaRmm.Outlook.Core.Tests/Program.cs')
+    $testSources = @(Get-ChildItem (Join-Path $repoRoot 'dotnet/NinjaRmm.Outlook.Core.Tests') -Filter '*.cs' -File | Sort-Object Name | ForEach-Object FullName)
+    & $compiler /nologo /warn:4 /warnaserror+ /target:exe "/reference:$library" "/out:$tests" @testSources
     if ($LASTEXITCODE) { throw 'Test diagnostic compilation failed.' }
 } else {
     $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
@@ -36,5 +37,14 @@ if ($RuntimeOnly) {
     if ($LASTEXITCODE) { throw 'net48 build failed.' }
     $tests = Join-Path $repoRoot 'dotnet/NinjaRmm.Outlook.Core.Tests/bin/Release/NinjaRmm.Outlook.Core.Tests.exe'
 }
+$fixtureOutput = Join-Path (Split-Path $tests) 'fixtures'
+$null = New-Item -ItemType Directory -Path $fixtureOutput -Force
+Copy-Item -Path (Join-Path $repoRoot 'Tests/fixtures/*.json') -Destination $fixtureOutput
 & $tests
 if ($LASTEXITCODE) { throw 'Core reference tests failed.' }
+
+if (-not $RuntimeOnly) {
+    $infrastructureTests = Join-Path $repoRoot 'dotnet/NinjaRmm.Outlook.Infrastructure.Tests/bin/Release/NinjaRmm.Outlook.Infrastructure.Tests.exe'
+    & $infrastructureTests
+    if ($LASTEXITCODE) { throw 'Infrastructure reference tests failed.' }
+}

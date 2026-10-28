@@ -13,11 +13,17 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup><Reference Include="System" /><Reference Include="System.Core" /></ItemGroup>
-  <ItemGroup><Compile Include="Program.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="Program.cs" /><Compile Include="MatcherTests.cs" /><Compile Include="ResponseTests.cs" /></ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\NinjaRmm.Outlook.Core\NinjaRmm.Outlook.Core.csproj">
       <Project>{65B28F7D-A5CA-4EB5-9548-CDA646659B39}</Project><Name>NinjaRmm.Outlook.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\Tests\fixtures\*.json">
+      <Link>fixtures\%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

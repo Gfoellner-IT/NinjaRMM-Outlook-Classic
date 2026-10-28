@@ -5,7 +5,7 @@ using NinjaRmm.Outlook.Core;
 namespace NinjaRmm.Outlook.Core.Tests
 {
     // No package restore, Office, credentials or live API is required.
-    internal static class Program
+    internal static partial class Program
     {
         private static int tests, failures, assertions;
 
@@ -20,6 +20,8 @@ namespace NinjaRmm.Outlook.Core.Tests
             Run("Parsing_FolderReferenceCases", Folders);
             Run("Parsing_ClosedMailReferenceCases", ClosedMail);
             Run("Archive_LocalDateCultureAndFallback", ArchiveDates);
+            RunMatcherTests();
+            RunResponseTests();
             Console.WriteLine("Tests passed: {0}, failed: {1}, assertions: {2}", tests - failures, failures, assertions);
             Console.WriteLine(failures == 0 ? "RESULT: OK" : "RESULT: FAILED");
             return failures == 0 ? 0 : 1;

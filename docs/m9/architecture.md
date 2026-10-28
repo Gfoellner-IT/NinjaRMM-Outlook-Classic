@@ -1,6 +1,6 @@
 # M9: architecture and target environment
 
-Target architecture for the started M9 milestone. The VBA implementation remains the functional reference; an Outlook VSTO host, installer, and deployment are not yet available.
+Target architecture for the started M9 milestone. The VBA implementation remains the functional reference; a diagnostic Outlook VSTO host is included, while functional host integration, an installer, and deployment remain open.
 
 ## Target
 
@@ -11,7 +11,7 @@ Target architecture for the started M9 milestone. The VBA implementation remains
 
 ## Prerequisites and evidence limits
 
-The first target environment is Windows with 64-bit classic Outlook. A regular build requires Visual Studio with Office/VSTO development tools and the .NET Framework 4.8 targeting pack. Installing Framework or VSTO runtimes alone does not provide those tools.
+The first target environment is Windows with 64-bit classic Outlook. A regular build requires Visual Studio Community 2022 (the selected edition) with Office/VSTO development tools and the .NET Framework 4.8 targeting pack. Installing Framework or VSTO runtimes alone does not provide those tools.
 
 The core's limited runtime test path is independent of the Office host. It does not establish a regular net48 build, installation, or Outlook add-in startup. Recorded snapshot checks are in [PUBLICATION.md](../../PUBLICATION.md).
 
@@ -19,25 +19,24 @@ The core's limited runtime test path is independent of the Office host. It does 
 
 ```text
 dotnet/NinjaRmm.Outlook.sln
-  NinjaRmm.Outlook.Core          pure logic; no Office or network access
-  NinjaRmm.Outlook.Core.Tests    executable reference tests; no NuGet/Office/credentials
-
-not yet implemented:
-  Infrastructure                API, tokens, Credential Manager, files, migration
-  Outlook VSTO host             Outlook adapters, Ribbon, events, review dialog
+  NinjaRmm.Outlook.Core                   pure matching/archive/parsing/policy logic
+  NinjaRmm.Outlook.Core.Tests             synthetic core/reference tests
+  NinjaRmm.Outlook.Infrastructure         INI, credentials, OAuth, read-only API reads/paging
+  NinjaRmm.Outlook.Infrastructure.Tests   simulated HTTP and temporary INI tests
+  NinjaRmm.Outlook.AddIn                  template-generated diagnostic Outlook VSTO host
 ```
 
-The VBA files remain in place. The initial C# core implements `ArchivePolicy`, `MatchLevels`, and `TicketParsing`. The API, full matcher, audit, storage, proposals, and dialogs have not yet been ported.
+The core includes all five matching rules, a session-only snapshot index, action/confirmation guards, API response parsing, and UTC conversion. The infrastructure is not wired to the host; it does not send requests on construction. The host only exposes diagnostic startup/Ribbon callbacks. Default build/clean compiles without VSTO manifest/registration/trust targets. See the [development host procedure](development-host.md) for explicit setup and acceptance boundaries. VBA remains unchanged and operational.
 
 API and file operations will use separate interfaces. Keep Office objects in the host/STA context. HTTP and data work require timeouts, cancellation, and controlled return to the UI context. Startup must prevent duplicate VBA/add-in processing.
 
 ## Explicit type and error-handling decisions
 
-- Represent unknown closing dates as `DateTime? = null`, rather than VBA date value `0`. Archive functions receive local dates, the current day, and culture explicitly; UTC conversion remains separate work.
-- Invalid numeric ticket states throw exceptions. VBA's fallback `Case Else` is not extended to invalid .NET enum values. The future API adapter must explicitly map failures to `Unavailable`.
+- Represent unknown closing dates as `DateTime? = null`, rather than VBA date value `0`. Archive functions receive local dates, the current day, and culture explicitly; UTC conversion receives the target time zone explicitly.
+- Invalid numeric ticket states throw exceptions. VBA's fallback `Case Else` is not extended to invalid .NET enum values. Archive orchestration must explicitly map API/transport/authentication failures to `Unavailable`; it is not connected to the host yet.
 - Configuration belongs to instances instead of global test overrides. All five rules start at `LogOnly`, with a global cap of `3`, as in VBA.
 - Regex timeouts limit processing; a timeout is not a match. Future callers must log it safely. ASCII digits preserve ticket-number semantics; folder-prefix comparisons are ordinal.
-- Version audit, rules, and rejection data before the first .NET write. Test migration with backups and recovery. This foundation does not read or change existing user files or credentials.
+- Version audit, rules, and rejection data before the first .NET write. Test migration with backups and recovery. The host does not read or change existing user files or credentials. Infrastructure settings/credential reads occur only when explicitly called; automated tests use synthetic replacements.
 - Persistent conversation assignments across restarts remain an open decision. The current in-memory implementation is not persistent storage.
 
 ## Regular development tools

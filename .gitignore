@@ -8,3 +8,9 @@ artifacts/
 # Private non-secret installation configuration
 .local/
 *.local.ini
+
+# Local signing material and per-developer VSTO state
+*.pfx
+*.p12
+*.snk
+*.suo
