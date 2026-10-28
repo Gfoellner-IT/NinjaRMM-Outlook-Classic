@@ -2,6 +2,15 @@
 
 Completed changes and recorded checks belong here. Current behavior and installation are in [README.md](README.md); future work is in [ROADMAP.md](ROADMAP.md).
 
+## 2026-10-28 - M9 matcher, infrastructure, and diagnostic VSTO host
+
+- Created a regular Outlook VSTO project with the installed Visual Studio Community 2022 wizard, preserving generated host/designer code. Added a diagnostic Explorer Ribbon and core-reference callback. No mail processing or API access is connected to startup.
+- Ported the five matching rules, normalization/extraction, exclusions, ambiguity/priority behavior, session-only snapshot index, matching-level action guards, fresh-ticket confirmation checks, and UTC/DST conversion.
+- Added API response/closing-date/board parsing against shared synthetic VBA fixtures. Added local INI settings, read-only Credential Manager access, OAuth token caching, one fresh-token retry after 401, read-only ticket/log operations, and bounded board queries. Runtime integration and complete feature parity remain open.
+- Default build/clean compiles the host without VSTO deployment-manifest, registration, certificate, or inclusion-list targets. Publishing requires explicitly configured development/deployment setup. Private signing material is ignored.
+- Verified the regular net48 Release build of all five projects with Visual Studio Community 2022 17.14.37824.6. Core: 19 groups, 404 assertions; infrastructure: 7 groups, 69 assertions; all passed. The limited RuntimeOnly core diagnostic also passed (19 groups, 404 assertions).
+- Tests used simulated HTTP handlers, shared synthetic fixtures, and a unique temporary UTF-16 INI. No real credential read, live API call, Office restart, add-in registration, trust change, or actual Outlook host/Ribbon test was performed. VBA sources and their operational installation remain unchanged.
+- Documented current scope and remaining signing, host acceptance, Outlook adapters, proposal/review/audit persistence, deployment, and rollback work in the M9 guides and roadmap.
 ## 2026-10-28 - Documentation in en-US
 
 - Translated the roadmap, import guide, configuration guide, M9 architecture/reference cases, and agent instructions into en-US.

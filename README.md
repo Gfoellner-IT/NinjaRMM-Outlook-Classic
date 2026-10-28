@@ -3,7 +3,7 @@
 This VBA project automates the handling and archiving of tickets in Microsoft Outlook.
 It also integrates with the NinjaRMM API to determine if a ticket is closed based on its status from the remote system, rather than parsing status text from emails.
 
-> **Source preview (2026-10-28):** VBA automation for classic Outlook, including ticket sorting, archiving, matching, audit and confirmation dialogs. A separate .NET Framework 4.8 core starts the VSTO migration; an Outlook-VSTO host and installer do not yet exist. Configure the installation locally and validate the complete VBA project before production use.
+> **Source preview (2026-10-28):** VBA automation for classic Outlook, including ticket sorting, archiving, matching, audit and confirmation dialogs. A separate .NET Framework 4.8 core starts the VSTO migration; a diagnostic Outlook-VSTO host is included; an installer and functional Outlook integration are not yet available. Configure the installation locally and validate the complete VBA project before production use.
 
 Documentation is split by purpose: [CHANGELOG.md](CHANGELOG.md) records completed changes and historical evidence, this README describes current behavior and operation, and [ROADMAP.md](ROADMAP.md) contains open work and future milestones. Contributor conventions are in [CLAUDE.md](CLAUDE.md). All repository documentation is maintained in English (United States, en-US); runtime localization is unchanged.
 
@@ -176,8 +176,15 @@ The features below are included in this branch. Historical evidence is recorded 
 
 Log-only applies to the foreign-mail matcher. The existing ticket-notification sorter and archive command can still move mail. Audit logs and reports can contain domains, ticket IDs and shortened matched subjects; they are not guaranteed anonymous. No mail bodies or credentials should be logged.
 
-## M9 C# foundation
+## M9 C# migration
 
-The solution [dotnet/NinjaRmm.Outlook.sln](dotnet/NinjaRmm.Outlook.sln) contains .NET Framework 4.8 projects for the initial pure core (archive decisions, rule levels, ticket/folder parsing) and executable reference tests. It does not yet contain an Outlook-VSTO add-in or an installer. VBA remains the working implementation.
+The solution [dotnet/NinjaRmm.Outlook.sln](dotnet/NinjaRmm.Outlook.sln) contains five .NET Framework 4.8 projects:
 
-Architecture, measured environment and missing build prerequisites: [M9 architecture](docs/m9/architecture.md). Porting scope, reference cases and test commands: [M9 reference cases](docs/m9/reference-cases.md). The `-RuntimeOnly` test mode is explicitly a limited diagnostic, not a net48/VSTO build.
+- **Core:** archive policy, parsing, five matching rules, safety decisions, UTC conversion, API response parsing, and a session-only snapshot index.
+- **Infrastructure:** non-secret local INI settings, read-only Windows Credential Manager access, OAuth client-credentials token caching, one refresh/retry after 401, ticket/log reads, and bounded board-query paging. It is not connected to the Outlook host.
+- **Core.Tests / Infrastructure.Tests:** executable synthetic reference tests with shared VBA fixtures and simulated HTTP responses; no live API or real credentials.
+- **AddIn:** a regular Visual Studio template-based Outlook VSTO host with a diagnostic Ribbon callback. It performs no mail processing or API access. Default build/clean compiles the DLL without generating VSTO deployment manifests, registering the add-in, or changing certificate trust.
+
+VBA remains the working implementation. The full review/audit/persistence workflow, Outlook mail/folder/event adapters, installer, and business acceptance remain open. Build with `tools/Test-DotNetCore.ps1`; `-RuntimeOnly` remains a limited core diagnostic.
+
+Use [M9 architecture](docs/m9/architecture.md), [reference cases](docs/m9/reference-cases.md), and the [development host procedure](docs/m9/development-host.md) for current boundaries and the separate signing/registration/host acceptance steps. Completed checks are recorded in [CHANGELOG.md](CHANGELOG.md).

@@ -6,12 +6,30 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NinjaRmm.Outlook.Core", "Ni
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NinjaRmm.Outlook.Core.Tests", "NinjaRmm.Outlook.Core.Tests\NinjaRmm.Outlook.Core.Tests.csproj", "{D9D48564-C754-4CBC-B145-A438692D5207}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NinjaRmm.Outlook.AddIn", "NinjaRmm.Outlook.AddIn\NinjaRmm.Outlook.AddIn.csproj", "{DF52AA2B-F399-4CAE-A11E-CAE7638B55BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NinjaRmm.Outlook.Infrastructure", "NinjaRmm.Outlook.Infrastructure\NinjaRmm.Outlook.Infrastructure.csproj", "{B2AE18CC-48F0-45ED-9B0D-552B62DC2578}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NinjaRmm.Outlook.Infrastructure.Tests", "NinjaRmm.Outlook.Infrastructure.Tests\NinjaRmm.Outlook.Infrastructure.Tests.csproj", "{CADB2BC3-88F6-4B4B-9442-15719B26A27D}"
+EndProject
 Global
   GlobalSection(SolutionConfigurationPlatforms) = preSolution
     Debug|Any CPU = Debug|Any CPU
     Release|Any CPU = Release|Any CPU
   EndGlobalSection
   GlobalSection(ProjectConfigurationPlatforms) = postSolution
+    {CADB2BC3-88F6-4B4B-9442-15719B26A27D}.Debug|Any CPU.ActiveCfg = Debug|AnyCPU
+    {CADB2BC3-88F6-4B4B-9442-15719B26A27D}.Debug|Any CPU.Build.0 = Debug|AnyCPU
+    {CADB2BC3-88F6-4B4B-9442-15719B26A27D}.Release|Any CPU.ActiveCfg = Release|AnyCPU
+    {CADB2BC3-88F6-4B4B-9442-15719B26A27D}.Release|Any CPU.Build.0 = Release|AnyCPU
+    {B2AE18CC-48F0-45ED-9B0D-552B62DC2578}.Debug|Any CPU.ActiveCfg = Debug|AnyCPU
+    {B2AE18CC-48F0-45ED-9B0D-552B62DC2578}.Debug|Any CPU.Build.0 = Debug|AnyCPU
+    {B2AE18CC-48F0-45ED-9B0D-552B62DC2578}.Release|Any CPU.ActiveCfg = Release|AnyCPU
+    {B2AE18CC-48F0-45ED-9B0D-552B62DC2578}.Release|Any CPU.Build.0 = Release|AnyCPU
+    {DF52AA2B-F399-4CAE-A11E-CAE7638B55BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+    {DF52AA2B-F399-4CAE-A11E-CAE7638B55BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+    {DF52AA2B-F399-4CAE-A11E-CAE7638B55BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+    {DF52AA2B-F399-4CAE-A11E-CAE7638B55BA}.Release|Any CPU.Build.0 = Release|Any CPU
     {65B28F7D-A5CA-4EB5-9548-CDA646659B39}.Debug|Any CPU.ActiveCfg = Debug|AnyCPU
     {65B28F7D-A5CA-4EB5-9548-CDA646659B39}.Debug|Any CPU.Build.0 = Debug|AnyCPU
     {65B28F7D-A5CA-4EB5-9548-CDA646659B39}.Release|Any CPU.ActiveCfg = Release|AnyCPU

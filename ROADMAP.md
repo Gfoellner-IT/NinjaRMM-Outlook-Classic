@@ -23,16 +23,16 @@ The goal is a C# VSTO add-in for **classic Outlook on Windows** that preserves t
 
 ### M9.1: define the target environment and reference behavior
 
-The [architecture](docs/m9/architecture.md) and [reference matrix](docs/m9/reference-cases.md) are available. The regular Visual Studio/VSTO toolchain, net48 targeting pack, project build evidence, and business approval of the reference scope remain open.
+The [architecture](docs/m9/architecture.md) and [reference matrix](docs/m9/reference-cases.md) are available. Current toolchain and build capabilities are described in the [README](README.md). Complete the actual Outlook target-matrix checks and business approval of the reference scope.
 
-- Install the regular Visual Studio/VSTO toolchain and net48 targeting pack, verify the target matrix with the actual VSTO host, and demonstrate the regular project build.
+- Verify the target matrix with the actual signed/registered VSTO host, including Office bitness and startup behavior.
 - Define the first add-in version's scope using the existing VBA reference cases. Unaccepted VBA behavior requires at least a documented specification and test cases before porting; a merge alone does not establish acceptance.
 - Define reference cases and data for sorting, archiving, offline fallback, matching, review, audit, and rules. Explicitly decide open issues such as persistent conversation assignments.
 - Acceptance: documented target matrix, scope, and associated reference cases; no installation is required for this definition step.
 
 ### M9.2: port business logic and the API to C#
 
-The initial core is described in [README.md](README.md). The full matcher and ticket index, API/token/credential adapters, UTC conversion, proposal/review logic, audit, rules, and data migration remain to be ported. The runtime diagnostic does not replace a build against net48 reference assemblies.
+The initial core is described in [README.md](README.md). Complete the index refresh/cache orchestration, proposal/review workflow, audit/reports, rule-file loading, and data migration. Connect and accept the ported matcher and API/token/credential adapters against the functional reference. The runtime diagnostic does not replace a build against net48 reference assemblies.
 
 - Keep parsing, archive decisions, matching, safety levels, proposals, audit, and rules in a host-independent library. Carry over synthetic fixtures and protection cases.
 - Preserve read-only NinjaOne operations and the client-credentials flow, including token caching, timeouts, cancellation, and Credential Manager access. Keep secrets out of packages and logs.
@@ -41,7 +41,7 @@ The initial core is described in [README.md](README.md). The full matcher and ti
 
 ### M9.3: Outlook host, Ribbon, and review UI
 
-- Create a regular Outlook VSTO project with a generated host, startup/shutdown handling, Ribbon commands for sorting, archiving, proposals, and reports, and an appropriate review UI.
+- Extend the diagnostic host with lifecycle/event coordination, Ribbon commands for sorting, archiving, proposals, and reports, and an appropriate review UI. Follow the [development host procedure](docs/m9/development-host.md) for signing/registration and actual startup acceptance.
 - Encapsulate mail events, sweeps, ticket folders, and the archive behind Outlook adapters. Keep COM access in the required host/STA context. Run HTTP and data work without blocking Outlook. Handle reentrancy, duplicate events, cancellation, and errors.
 - Acceptance: actual add-in/Ribbon startup and business tests in the test PST; cover cold/warm starts, multiple windows, and shutdown.
 
