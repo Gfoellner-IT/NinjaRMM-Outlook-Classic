@@ -1,36 +1,37 @@
-# M9: Referenzverhalten und Portierungsnachweise
+# M9: reference behavior and porting evidence
 
-Die VBA-Spezifikation ergibt sich aus dem vorhandenen Code und den Tests derselben Revision. Die Fälle sind synthetisch; produktive Mailtexte und Credentials werden nicht übernommen. Aktuelle Durchführungsergebnisse gehören ins [Changelog](../../CHANGELOG.md), offene Arbeiten in die [Roadmap](../../ROADMAP.md).
+The VBA specification comes from the existing code and tests at the same revision. Cases are synthetic; do not carry over production email text or credentials. Record completed checks in [CHANGELOG.md](../../CHANGELOG.md) and open work in [ROADMAP.md](../../ROADMAP.md).
 
-## Prüfumfang
+## Test scope
 
-VBA-Unit-Tests und C#-Referenztests verwenden synthetische Daten. Die separat registrierten Outlook-Integrationstests laufen ausschließlich im isolierten Test-PST. Testergebnisse dieses Quellstands stehen in [PUBLICATION.md](../../PUBLICATION.md); fachliche Zuordnungsqualität und tatsächliche Outlook-Bedienung sind eigene Nachweise.
-## Referenzmatrix
+VBA unit tests and C# reference tests use synthetic data. Separately registered Outlook integration tests must run only in the isolated test PST. Recorded results for the source snapshot are in [PUBLICATION.md](../../PUBLICATION.md). Business matching accuracy and actual Outlook UI behavior require separate evidence.
 
-| Bereich | Verbindliches Referenzverhalten | Quelle in VBA | C#-Portierung |
+## Reference matrix
+
+| Area | Required reference behavior | VBA source | C# port status |
 |---|---|---|---|
-| Archiventscheidung | Closed/NotFound per API archivieren; Open bleibt unabhängig von alter Statusmail; Unavailable nur mit aktiviertem Fallback und geschlossener Statusmail | `Tests/TicketDecisionTests.bas` | Initial implementiert, vollständige 16-Kombinationen-Matrix plus Bedarf der Mailprüfung |
-| Sicherheitsstufen | Fünf Regeln, Default 1, globale Obergrenze 3; Minimum und Begrenzung auf 0–3; keine globale Zustandsübernahme zwischen Instanzen | `Tests/MatchLevelsTests.bas` | Initial implementiert, alle Regeln mit Konfigurationswerten und Caps von -1 bis 4 geprüft |
-| Ticket-/Ordner-Parsing | Tag am Betreffanfang, Groß-/Kleinschreibung, Ausgabe-Reset bei Fehlschlag, Präfixverkürzung, kurze IDs nicht mit längeren verwechseln | `Tests/TicketParsingTests.bas` | Initiale Referenzfälle implementiert |
-| Archivdatum | Unbekanntes Datum nutzt vorgegebenen heutigen Tag; Monatsname folgt lokaler Kultur | `Tests/TicketParsingTests.bas`, `Tests/TimeUtilTests.bas` | Lokale Datums-/Kulturformatierung implementiert; UTC-Konversion noch offen |
-| API und Token | Zustände, Schließdatum, gelöschte/fehlende Tickets, 401-Retry, Timeouts, Token-Cache, Credential-Fehler ohne Secrets | `Tests/NinjaApiTests.bas`, `Tests/NinjaTicketLogicTests.bas`, `Tests/NinjaAuthTests.bas`, `Tests/NinjaTokenLogicTests.bas` | Offen |
-| Ticketindex und Matcher | Paging, Cache, Priorität der Regeln, Ausschlüsse, Mehrdeutigkeit, geschlossen/nicht lesbar niemals verschieben | `Tests/NinjaTicketIndexTests.bas`, `Tests/TicketMatcherTests.bas`, `Tests/TicketMatchServiceTests.bas` | Offen |
-| Vorschläge und Entscheidungen | Dry-Run nie verschiebend/vormerkend; Bestätigen prüft Schutzregeln erneut; Ablehnungen bleiben erhalten; Abbruch entscheidet nichts | `Tests/MatchReviewTests.bas`, `Tests/MatchLevelsTests.bas` | Offen |
-| Audit und Regeln | Stabile Nachrichtenschlüssel, Monatsdateien/Aufbewahrung, Schreibfehler stören nicht, Freigabe vor Regelaktivierung | `Tests/AuditTests.bas`, `Tests/AuditReportTests.bas`, `Tests/ManualScanTests.bas`, `Tests/LearnedRulesTests.bas` | Offen |
-| Outlook und Oberfläche | Ereignisse, Stop/Shutdown, Mail-/Ordneradapter, Archiv-Restore, Formular/Fallback, keine Änderungen im realen Postfach durch Tests | `Tests/OutlookAdapterTests.bas`, `Tests/ReviewFormTests.bas` | Regulärer VSTO-Host und eigene Abnahme noch offen |
+| Archive decisions | Archive Closed/NotFound through the API; keep Open regardless of old status emails; use Unavailable fallback only when enabled and a message indicates closure | `Tests/TicketDecisionTests.bas` | Initial implementation: all 16 state/email/fallback combinations and need-for-mail checks |
+| Safety levels | Five rules, default 1, global cap 3; take the minimum and clamp to 0-3; do not share global state between instances | `Tests/MatchLevelsTests.bas` | Initial implementation: every rule tested with configured levels and caps from -1 through 4 |
+| Ticket/folder parsing | Subject tag at the start, case handling, cleared outputs on failure, prefix shortening, and no confusion between short and longer IDs | `Tests/TicketParsingTests.bas` | Initial reference cases implemented |
+| Archive dates | Unknown date uses the supplied current day; month names follow the local culture | `Tests/TicketParsingTests.bas`, `Tests/TimeUtilTests.bas` | Local date/culture formatting implemented; UTC conversion remains open |
+| API and tokens | States, closing dates, deleted/missing tickets, retry after 401, timeouts, token cache, and credential errors without secret disclosure | `Tests/NinjaApiTests.bas`, `Tests/NinjaTicketLogicTests.bas`, `Tests/NinjaAuthTests.bas`, `Tests/NinjaTokenLogicTests.bas` | Open |
+| Ticket index and matcher | Paging, cache, rule priority, exclusions, ambiguity; never move closed or unreadable matches | `Tests/NinjaTicketIndexTests.bas`, `Tests/TicketMatcherTests.bas`, `Tests/TicketMatchServiceTests.bas` | Open |
+| Proposals and decisions | A dry run never moves or queues messages; confirmation repeats protection checks; rejections persist; cancellation makes no decision | `Tests/MatchReviewTests.bas`, `Tests/MatchLevelsTests.bas` | Open |
+| Audit and rules | Stable message keys, monthly files/retention, nonfatal write failures, explicit approval before rule activation | `Tests/AuditTests.bas`, `Tests/AuditReportTests.bas`, `Tests/ManualScanTests.bas`, `Tests/LearnedRulesTests.bas` | Open |
+| Outlook and UI | Events, stop/shutdown, mail/folder adapters, archive restore, form/fallback, and no test changes to the production mailbox | `Tests/OutlookAdapterTests.bas`, `Tests/ReviewFormTests.bas` | Regular VSTO host and separate acceptance remain open |
 
-## Ausführung
+## Execution
 
-Regulärer Projektbuild und C#-Referenztests nach Einrichtung der Toolchain:
+After installing the toolchain, run the regular project build and C# reference tests:
 
 ```powershell
 .\tools\Test-DotNetCore.ps1
 ```
 
-Begrenzte lokale Diagnose ohne Visual Studio/Targeting-Pack:
+For a limited local diagnostic without Visual Studio or a targeting pack:
 
 ```powershell
 .\tools\Test-DotNetCore.ps1 -RuntimeOnly
 ```
 
-Der zweite Weg kompiliert ausschließlich die Fachlogik und ihre Tests gegen installierte Framework-Runtime-Assemblies. Er validiert weder net48-Referenz-APIs noch MSBuild-Projekt, VSTO-Host, Manifest, Installation oder Outlook-Verhalten. Die Tests starten kein Office, rufen keine API auf und verwenden keine echten Benutzerdateien. Diagnosedateien liegen unter dem ignorierten Verzeichnis `artifacts/core-runtime`.
+The diagnostic compiles only the core and its tests against installed Framework runtime assemblies. It does not validate net48 reference APIs, the MSBuild project, VSTO host, manifest, installation, or Outlook behavior. These tests do not start Office, call the API, or use real user files. Diagnostic outputs are stored in the ignored `artifacts/core-runtime` directory.

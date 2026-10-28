@@ -3,9 +3,9 @@
 This VBA project automates the handling and archiving of tickets in Microsoft Outlook.
 It also integrates with the NinjaRMM API to determine if a ticket is closed based on its status from the remote system, rather than parsing status text from emails.
 
-> **Source preview (2026-10-28):** VBA automation for classic Outlook, including ticket sorting, archiving, matching, audit and confirmation dialogs. A separate .NET Framework 4.8 core starts the VSTO migration; an Outlook-VSTO host and installer do not yet exist. Configure the installation locally and validate the complete VBA project before productive use.
+> **Source preview (2026-10-28):** VBA automation for classic Outlook, including ticket sorting, archiving, matching, audit and confirmation dialogs. A separate .NET Framework 4.8 core starts the VSTO migration; an Outlook-VSTO host and installer do not yet exist. Configure the installation locally and validate the complete VBA project before production use.
 
-Documentation is split by purpose: [CHANGELOG.md](CHANGELOG.md) records completed changes and historical evidence, this README describes current behavior and operation, and [ROADMAP.md](ROADMAP.md) contains open work and future milestones. Contributor conventions are in [CLAUDE.md](CLAUDE.md).
+Documentation is split by purpose: [CHANGELOG.md](CHANGELOG.md) records completed changes and historical evidence, this README describes current behavior and operation, and [ROADMAP.md](ROADMAP.md) contains open work and future milestones. Contributor conventions are in [CLAUDE.md](CLAUDE.md). All repository documentation is maintained in English (United States, en-US); runtime localization is unchanged.
 
 Repository: [GitHub project](https://github.com/Gfoellner-IT/NinjaRMM-Outlook-Classic). Installation settings are local; see [configuration](docs/configuration.md).
 
@@ -74,7 +74,7 @@ These settings affect foreign-mail matching. Existing ticket-notification sortin
 
 ## Local installation settings
 
-This source uses neutral defaults and an intentionally invalid example API URL. Configure `%LOCALAPPDATA%\NinjaRMM-Outlook-Classic\settings.ini` before importing it into an existing installation. Import the new `LocalSettings.bas` module as well. See [configuration and migration](docs/configuration.md) and [publication scope](PUBLICATION.md). No productive Outlook installation is modified by editing this repository.
+This source uses neutral defaults and an intentionally invalid example API URL. Configure `%LOCALAPPDATA%\NinjaRMM-Outlook-Classic\settings.ini` before importing it into an existing installation. Import the new `LocalSettings.bas` module as well. See [configuration and migration](docs/configuration.md) and [publication scope](PUBLICATION.md). No production Outlook installation is modified by editing this repository.
 
 ## Requirements
 
@@ -85,7 +85,7 @@ This source uses neutral defaults and an intentionally invalid example API URL. 
 ## Installation
 
 1. Open Outlook's VBA editor (`Alt+F11`) and import these files (*File > Import File*):
-   - **From `outlook\` (all production modules; exclude `OutlookTestGuard.bas`):** `AuditLogic.bas`, `AuditReport.bas`, `ClipboardHelper.bas`, `FileAuditSink.cls`, `FileRejectionStore.cls`, `FormMatchPrompt.cls`, `GermanText.bas`, `HttpTokenFetcher.cls`, `IAuditSink.cls`, `IIncomingMail.cls`, `IMatchPrompt.cls`, `INinjaTransport.cls`, `IProgressSink.cls`, `IRejectionStore.cls`, `ITicketFolder.cls`, `ITicketIndex.cls`, `ITicketStore.cls`, `ITokenFetcher.cls`, `JsonLite.bas`, `LearnedRules.bas`, `ManualScan.bas`, `MatchLevels.bas`, `MatchPromptText.bas`, `MatchProposal.cls`, `MatchProposals.bas`, `MatchRejections.bas`, `MatchReview.bas`, `MatchTicket.cls`, `MsgBoxMatchPrompt.cls`, `NinjaApi.bas`, `NinjaAuth.bas`, `NinjaCredentialStore.bas`, `NinjaTicketIndex.cls`, `NinjaTicketLogic.bas`, `NinjaTokenLogic.bas`, `NinjaTransport.cls`, `OutlookIncomingMail.cls`, `OutlookTicketFolder.cls`, `OutlookTicketStore.cls`, `ProgressHelper.bas`, `ProgressSinkForm.cls`, `TicketAudit.bas`, `Ticketautomatismus.bas`, `TicketConfig.bas`, `TicketDecision.bas`, `TicketLog.bas`, `TicketMailWatcher.cls`, `TicketMatcher.bas`, `TicketParsing.bas`, `TicketService.bas`, `TimeUtil.bas`
+   - **From `outlook\` (all production modules; exclude `OutlookTestGuard.bas`):** `AuditLogic.bas`, `AuditReport.bas`, `ClipboardHelper.bas`, `FileAuditSink.cls`, `FileRejectionStore.cls`, `FormMatchPrompt.cls`, `GermanText.bas`, `HttpTokenFetcher.cls`, `IAuditSink.cls`, `IIncomingMail.cls`, `IMatchPrompt.cls`, `INinjaTransport.cls`, `IProgressSink.cls`, `IRejectionStore.cls`, `ITicketFolder.cls`, `ITicketIndex.cls`, `ITicketStore.cls`, `ITokenFetcher.cls`, `JsonLite.bas`, `LearnedRules.bas`, `LocalSettings.bas`, `ManualScan.bas`, `MatchLevels.bas`, `MatchPromptText.bas`, `MatchProposal.cls`, `MatchProposals.bas`, `MatchRejections.bas`, `MatchReview.bas`, `MatchTicket.cls`, `MsgBoxMatchPrompt.cls`, `NinjaApi.bas`, `NinjaAuth.bas`, `NinjaCredentialStore.bas`, `NinjaTicketIndex.cls`, `NinjaTicketLogic.bas`, `NinjaTokenLogic.bas`, `NinjaTransport.cls`, `OutlookIncomingMail.cls`, `OutlookTicketFolder.cls`, `OutlookTicketStore.cls`, `ProgressHelper.bas`, `ProgressSinkForm.cls`, `TicketAudit.bas`, `Ticketautomatismus.bas`, `TicketConfig.bas`, `TicketDecision.bas`, `TicketLog.bas`, `TicketMailWatcher.cls`, `TicketMatcher.bas`, `TicketParsing.bas`, `TicketService.bas`, `TimeUtil.bas`
    - **From `forms\`:** `ProgressForm.frm` and `ReviewForm.frm` (each needs its matching `.frx` file in the same folder).
 2. No VBA reference has to be enabled besides the default Outlook library. All files are plain ASCII, so the import cannot garble umlauts.
 3. Create the non-secret local settings file using [docs/configuration.md](docs/configuration.md). Keep credentials in Windows Credential Manager. Check `TicketConfig.bas` for folder names, matching levels and offline fallback.

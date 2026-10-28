@@ -1,81 +1,83 @@
 # Roadmap
 
-Planungsstand: **27.10.2026**. Hier stehen ausschließlich offene Arbeiten, geplante Meilensteine und deren Abnahmekriterien. Den aktuellen Funktionsumfang beschreibt die [README](README.md); abgeschlossene Änderungen und historische Prüfergebnisse stehen im [CHANGELOG](CHANGELOG.md).
+Planning date: **October 28, 2026**. This file contains open work, planned milestones, dependencies, and acceptance criteria. [README.md](README.md) describes current behavior; [CHANGELOG.md](CHANGELOG.md) records completed changes and historical evidence. Maintain all repository documentation in **English (United States, en-US)**.
 
-## VBA – Ausstehende Abnahme des veröffentlichten Quellstands
+## VBA: acceptance of the published source
 
-Diese Aufgaben betreffen den in der README beschriebenen integrierten Entwicklungsstand. Eine Quellveröffentlichung ist keine fachliche Abnahme; erforderlich bleiben die folgenden Prüfungen.
+These tasks apply to the integrated source described in the README. Publishing source does not establish business acceptance; the following checks remain necessary.
 
-| Offene Arbeit | Abnahmekriterium |
+| Open task | Acceptance criteria |
 |---|---|
-| Outlook-Import und vollständige Kompilierung | Passender Entwicklungsstand importiert, *Debuggen > Kompilieren* ohne Fehler; Sicherung des VBA-Projekts vorhanden |
-| M6: Matcher und Wiederanlauf | Eindeutige offene Treffer, Mehrdeutigkeit, ausgeschlossene/geschlossene/nicht lesbare Tickets, Probelauf und Wiederanlauf im isolierten Test-PST geprüft |
-| Dauerhafte Konversationszuordnung entscheiden | Festlegen, ob Zuordnungen Outlook-Neustarts überstehen müssen; falls ja, Speicherung, Wiederherstellung und Tests umsetzen |
-| M7: Audit und manuelle Zuordnungen | Nachrichtenschlüssel bleibt nach Verschieben stabil, Audit-Schreibfehler stoppen keine Verarbeitung, Bericht anhand echter freigegebener Entscheidungen geprüft |
-| M7: erste Regelrunde | Ausreichende Bestätigungen/Ablehnungen auswerten, Kandidaten prüfen und ausschließlich ausdrücklich freigegebene Regeln aktivieren |
-| M8: Dialoge in Outlook | Formular und MsgBox-Fallback prüfen: bestätigen, ablehnen, überspringen/abbrechen, wiederholter Aufruf, Hinweisbündelung und Audit-Einträge |
+| Outlook import and full compilation | Import the matching source revision, back up the VBA project, and complete **Debug > Compile Project1** without errors |
+| M6: matching and restart behavior | Verify unique open matches, ambiguous results, excluded/closed/unreadable tickets, dry runs, and restarts in the isolated test PST |
+| Persistent conversation assignments | Decide whether assignments must survive Outlook restarts; if required, implement storage, recovery, and tests |
+| M7: audit and manual assignments | Verify stable message keys after moves, nonfatal audit write failures, and reports based on explicitly approved decisions |
+| M7: first rules review | Evaluate sufficient confirmations/rejections, review candidates, and enable only explicitly approved rules |
+| M8: Outlook dialogs | Test the form and message-box fallback: accept, reject, skip/cancel, repeated invocation, grouped notifications, and audit records |
 
-Die [Importanleitung](IMPORT.md) gilt ausschließlich für den dort bezeichneten Entwicklungsstand. Tests mit Outlook-Ordnern und Mails erfolgen nur in der lokalen Nicht-Exchange-PST `NinjaTest`, niemals im produktiven Postfach.
-## M9 – Migration von VBA auf ein .NET-VSTO-Add-in (begonnen)
+The [import guide](IMPORT.md) applies only to its stated source scope. Tests that create Outlook folders or messages must use the local, non-Exchange `NinjaTest` PST, never the production mailbox.
 
-Ziel ist ein C#-VSTO-Add-in für **Outlook Classic unter Windows**, das die fachlichen Funktionen der VBA-Lösung übernimmt und regulär gebaut, installiert und aktualisiert werden kann. VSTO verwendet **.NET Framework**; die Arbeitsentscheidung .NET Framework 4.8 und der lokale Umgebungsbefund stehen in der [Architektur](docs/m9/architecture.md). Reguläre Entwicklungswerkzeuge und die Hostvalidierung bleiben Voraussetzungen für die weiteren Schritte. Neues Outlook unterstützt COM/VSTO nicht und benötigt eine eigene Architekturentscheidung. Quellen: [Microsoft: VSTO entwickeln](https://learn.microsoft.com/en-us/visualstudio/vsto/create-vsto-add-ins-for-office-by-using-visual-studio?view=visualstudio), [Microsoft: Outlook-Add-in-Plattformen](https://learn.microsoft.com/en-us/office/dev/add-ins/outlook/outlook-add-ins-overview), geprüft am 27.10.2026.
+## M9: migrate VBA to a .NET VSTO add-in (started)
 
-### M9.1 – Zielumgebung und Referenzverhalten festlegen
+The goal is a C# VSTO add-in for **classic Outlook on Windows** that preserves the VBA solution's business behavior and supports a regular build, installation, and update process. VSTO uses **.NET Framework**. The working target of .NET Framework 4.8 and its validation limits are documented in the [architecture](docs/m9/architecture.md). Regular development tools and host validation remain prerequisites. New Outlook does not support COM/VSTO and requires a separate architecture decision. Sources checked on October 27, 2026: [Microsoft: create VSTO add-ins](https://learn.microsoft.com/en-us/visualstudio/vsto/create-vsto-add-ins-for-office-by-using-visual-studio?view=visualstudio), [Microsoft: Outlook add-in platforms](https://learn.microsoft.com/en-us/office/dev/add-ins/outlook/outlook-add-ins-overview).
 
-Architektur und Referenzmatrix sind angelegt ([Architektur](docs/m9/architecture.md), [Referenzfälle](docs/m9/reference-cases.md)). Offen bleiben die reguläre Visual-Studio-/VSTO-Toolchain mit net48-Targeting-Pack, deren Buildnachweis und die fachliche Bestätigung des Referenzumfangs.
+### M9.1: define the target environment and reference behavior
 
-- Reguläre Visual-Studio-VSTO-Toolchain und net48-Targeting-Pack einrichten, die in der Architektur erfasste Zielmatrix am VSTO-Host verifizieren und den regulären Projektbuild nachweisen.
-- Den Funktionsumfang der ersten Add-in-Version anhand der vorhandenen VBA-Referenzfälle festlegen. Unabgenommene VBA-Funktionen benötigen mindestens eine dokumentierte Verhaltensspezifikation und Testfälle vor der Portierung; sie gelten nicht allein durch einen Merge als abgenommen.
-- Referenzfälle und Testdaten für Sortieren, Archivieren, Offline-Fallback, Matching, Review, Audit und Regeln festlegen. Offene Punkte wie persistente Konversationszuordnung ausdrücklich entscheiden.
-- Abnahme: dokumentierte Zielmatrix, Funktionsumfang und zugehörige Referenzfälle; keine Installation erforderlich.
+The [architecture](docs/m9/architecture.md) and [reference matrix](docs/m9/reference-cases.md) are available. The regular Visual Studio/VSTO toolchain, net48 targeting pack, project build evidence, and business approval of the reference scope remain open.
 
-### M9.2 – Fachlogik und API in C# portieren
+- Install the regular Visual Studio/VSTO toolchain and net48 targeting pack, verify the target matrix with the actual VSTO host, and demonstrate the regular project build.
+- Define the first add-in version's scope using the existing VBA reference cases. Unaccepted VBA behavior requires at least a documented specification and test cases before porting; a merge alone does not establish acceptance.
+- Define reference cases and data for sorting, archiving, offline fallback, matching, review, audit, and rules. Explicitly decide open issues such as persistent conversation assignments.
+- Acceptance: documented target matrix, scope, and associated reference cases; no installation is required for this definition step.
 
-Der initiale Kern ist in der [README](README.md) beschrieben. Noch zu portieren sind vollständiger Matcher und Ticketindex, API/Token/Credential-Adapter, UTC-Konversion, Vorschlags-/Review-Logik, Audit, Regeln und Datenmigration. Die Runtime-Diagnose ersetzt keinen Build gegen die net48-Referenzassemblies.
+### M9.2: port business logic and the API to C#
 
-- Vom Office-Host getrennte Bibliothek für Parsing, Archiventscheidungen, Matching, Stufen, Vorschläge, Audit und Regeln; vorhandene anonymisierte Fixtures und Schutzfälle übernehmen.
-- NinjaOne-API und Client-Credentials-Flow lesend erhalten, mit Token-Cache, Timeouts, Abbruch und Credential-Manager-Zugriff. Keine Secrets im Paket oder in Logs.
-- Datenformate für Audit, Regeldatei und Ablehnungen versionieren; Wiederverwendung oder Migration mit Sicherung und Rückweg testen.
-- Abnahme: automatisierter Build, Unit-Tests und Negativfälle; Abgleich mit den vereinbarten VBA-Referenzfällen. Dies ist noch keine Outlook-Abnahme.
+The initial core is described in [README.md](README.md). The full matcher and ticket index, API/token/credential adapters, UTC conversion, proposal/review logic, audit, rules, and data migration remain to be ported. The runtime diagnostic does not replace a build against net48 reference assemblies.
 
-### M9.3 – Outlook-Host, Ribbon und Review-Oberfläche
+- Keep parsing, archive decisions, matching, safety levels, proposals, audit, and rules in a host-independent library. Carry over synthetic fixtures and protection cases.
+- Preserve read-only NinjaOne operations and the client-credentials flow, including token caching, timeouts, cancellation, and Credential Manager access. Keep secrets out of packages and logs.
+- Version audit, rule, and rejection formats. Test reuse or migration with backups and a recovery path.
+- Acceptance: automated build, unit tests, negative cases, and comparison with approved VBA reference cases. This does not establish Outlook acceptance.
 
-- Reguläres Outlook-VSTO-Projekt mit generiertem Host, Startup/Shutdown, Ribbon-Schaltflächen für Sortieren, Archivieren, Vorschläge und Berichte sowie einer geeigneten Review-Oberfläche.
-- Mailereignisse, Sweep, Ticketordner und Archiv hinter Outlook-Adaptern kapseln. COM-Zugriffe im vorgesehenen Host-/STA-Kontext halten; HTTP/Datenarbeit so ausführen, dass Outlook bedienbar bleibt. Wiedereintritt, doppelte Events, Abbruch und Fehlerfälle behandeln.
-- Abnahme: echter Add-in-/Ribbonstart sowie fachliche Tests ausschließlich im Test-PST; warmen/kalten Start, mehrere Fenster und Shutdown prüfen.
+### M9.3: Outlook host, Ribbon, and review UI
 
-### M9.4 – Signierung, Installation, Updates und Rückweg
+- Create a regular Outlook VSTO project with a generated host, startup/shutdown handling, Ribbon commands for sorting, archiving, proposals, and reports, and an appropriate review UI.
+- Encapsulate mail events, sweeps, ticket folders, and the archive behind Outlook adapters. Keep COM access in the required host/STA context. Run HTTP and data work without blocking Outlook. Handle reentrancy, duplicate events, cancellation, and errors.
+- Acceptance: actual add-in/Ribbon startup and business tests in the test PST; cover cold/warm starts, multiple windows, and shutdown.
 
-- Installationsverfahren (z. B. ClickOnce oder verwalteter Installer), Benutzer-/Maschinenumfang, feste Add-in-Identität und Versionsschema auswählen; Code-/Manifestsignierung und Herausgebervertrauen mit der IT abstimmen.
-- Voraussetzungen, Updatequelle und Deinstallation dokumentieren; kein Entwickler-/Forge-Schreibtoken im Add-in. Updatefehler, Offlinebetrieb und Rollback einschließlich Registrierung und Konfiguration prüfen.
-- VBA-Projekt sichern. Vor Aktivierung im Pilot die überlappenden VBA-Watcher, Regeln und automatischen Aufrufe deaktivieren, damit VBA und Add-in keine Mail doppelt verarbeiten. Beim Rückweg Add-in deaktivieren und den gesicherten VBA-Stand kontrolliert wieder aktivieren.
-- Abnahme: Installation, Update und Deinstallation auf einer repräsentativen Zielmaschine, echter Hoststart und nachgewiesener Rückweg; Paket-/Manifestprüfung allein reicht nicht.
+### M9.4: signing, installation, updates, and rollback
 
-### M9.5 – Pilot und Ablösung
+- Select deployment, such as ClickOnce or a managed installer, user/machine scope, a stable add-in identity, and a version scheme. Coordinate code/manifest signing and publisher trust with IT.
+- Document prerequisites, update sources, and uninstallation. Do not embed developer or repository write tokens. Test update failures, offline behavior, and rollback, including registration and configuration.
+- Back up the VBA project. Disable overlapping VBA watchers, rules, and automatic entry points before enabling the pilot add-in to prevent duplicate processing. For rollback, disable the add-in and deliberately reactivate the backed-up VBA version.
+- Acceptance: installation, update, uninstallation, actual host startup, and demonstrated rollback on a representative target machine. Package/manifest checks alone are insufficient.
 
-- Erst Protokollbetrieb, danach bestätigte Zuordnungen und erst nach fachlicher Freigabe Automatik je Regel. Bestehende Ordner, Daten und Zugänge erhalten.
-- Sortieren, Archivmonat, Offlineverhalten, sichere Zuordnung, Bericht und Audit gemeinsam mit dem Nutzer prüfen; Startdauer und Outlook-Bedienbarkeit erfassen.
-- VBA erst nach erfolgreicher fachlicher Abnahme ablösen. Ergebnis, Paketversion, Zielumgebung und verbleibende Grenzen dokumentieren.
+### M9.5: pilot and replacement
 
-## M10 – Lesbare Vorschlagsdetails nach dem VSTO-Rebase
+- Start with logging, then confirmed assignments, and enable automatic processing per rule only after business approval. Preserve existing folders, data, and access settings.
+- Review sorting, archive month selection, offline behavior, safe matching, reports, and audit records with the user. Record startup time and Outlook responsiveness.
+- Retire VBA only after successful business acceptance. Record the result, package version, target environment, and remaining limitations.
 
-**Abhängigkeit:** nach Abschluss der VSTO-Migration (M9). Die Darstellungsverbesserung wird in der VSTO-Oberfläche umgesetzt.
+## M10: readable proposal details after the VSTO migration
 
-- Die Vorschlagsliste bleibt in der Standardansicht kurz. Eine eigene schreibgeschützte Textbox zeigt die Details des aktuell fokussierten Eintrags: vollständigen Ticketbetreff, Mailbetreff, Absenderdomain und Zuordnungsregel.
-- Automatischen Zeilenumbruch und vertikales Scrollen im Detailbereich vorsehen, damit lange Texte vollständig lesbar sind.
-- Den Mailinhalt bei Bedarf als einblendbare Klartextvorschau ergänzen. Einen begrenzten Ausschnitt ausdrücklich als solchen kennzeichnen; die aktuelle VBA-Schnittstelle liefert höchstens 4.000 Zeichen.
-- Fokussierten Vorschlag und angekreuzte Vorschläge getrennt behandeln: Das Anzeigen der Details verändert weder die Häkchen noch eine Zuordnungsentscheidung.
-- Abnahme: lange Betreffe und mehrzeiliger Inhalt sind ohne seitliches Abschneiden lesbar; Wechsel per Maus und Tastatur aktualisiert die passenden Details. Übernehmen, Ablehnen und Schließen behalten ihr bisheriges Verhalten.
-## Reihenfolge und Entscheidungen
+**Dependency:** completion of M9. Implement this display improvement in the VSTO UI.
 
-Zunächst den Umfang der ersten VSTO-Version in M9.1 festlegen. Wenn M6–M8 als VBA-Erweiterung veröffentlicht werden sollen, zuerst deren offene Abnahmen abschließen. Für eine direkte Portierung mindestens die Referenzfälle und das Sollverhalten freigeben; ein vorheriger VBA-Release ist keine zwingende Voraussetzung.
+- Keep the default proposal list compact. Use a separate read-only text box for the focused entry's full ticket subject, email subject, sender domain, and matching rule.
+- Enable word wrapping and vertical scrolling so long text remains readable.
+- Optionally provide an expandable plain-text message preview. Clearly label truncated excerpts; the current VBA interface returns at most 4,000 characters.
+- Keep focused and checked proposals independent: showing details must not change check marks or assignment decisions.
+- Acceptance: long subjects and multiline content are readable without horizontal clipping; mouse/keyboard navigation updates the correct details. Accept, reject, and close retain their existing behavior.
 
-Reihenfolge: M9.1 → M9.2 → M9.3 → M9.4 → M9.5 → M10 (Vorschlagsdetails). Eine Kalenderzusage entsteht daraus nicht. Offene Entscheidungen sind Zielumgebung und Toolchain, Umfang der ersten Add-in-Version, dauerhafte Konversationszuordnung, Datenmigration sowie Deployment- und Updatequelle.
+## Sequence and decisions
 
-## Übergreifende Abnahmekriterien
+First define the initial VSTO version's scope in M9.1. If M6-M8 are released as a VBA extension, complete their open acceptance checks first. A direct port requires approved reference cases and expected behavior; a prior VBA release is not mandatory.
 
-- Sortierung, Archivstruktur und manuelle Zuordnungen erhalten; keine schreibenden NinjaOne-Ticketoperationen oder Ticketerstellung ergänzen.
-- Referenzfälle für API-Zustände, Schließdatum, lokalisierte Statusnamen, Offline-Fallback und sichere Zuordnung prüfen. Aktuelle Tenantrechte und Erreichbarkeit bei der jeweiligen Live-Abnahme nachweisen.
-- Für geänderte Logik automatisierte Tests und Negativfälle ausführen. Ergebnisse an Commit, Umgebung und Datum binden. Excel-/Parser-Erfolg ersetzt keine Outlook-Abnahme.
-- Vor VBA-Veröffentlichung Signatur und Vertrauen prüfen; bei VSTO zusätzlich Paket, Installation, Host-/Ribbonstart und Rückweg nachweisen.
-- Zugangsdaten aus Repo und Logs fernhalten. Bei Weitergabe von Audit und Berichten berücksichtigen, dass gekürzte Betreffe personenbezogene Angaben enthalten können.
+Sequence: M9.1 -> M9.2 -> M9.3 -> M9.4 -> M9.5 -> M10. This is not a delivery-date commitment. Open decisions include the target environment/toolchain, initial add-in scope, persistent conversation assignments, data migration, deployment, and update sources.
+
+## Cross-cutting acceptance criteria
+
+- Preserve sorting, archive structure, and manual assignments. Do not add ticket creation or write operations on NinjaOne tickets.
+- Test API states, closing dates, localized status names, offline fallback, and safe matching. Verify current tenant permissions and connectivity during the corresponding live acceptance run.
+- Run automated tests and negative cases for changed logic. Associate results with a commit, environment, and date. Excel/parser success does not establish Outlook acceptance.
+- Verify VBA signing and trust before release. For VSTO, also verify the package, installation, host/Ribbon startup, and rollback.
+- Keep credentials out of the repository and logs. Shortened subjects can still contain personal data; review audit records and reports before sharing them.
