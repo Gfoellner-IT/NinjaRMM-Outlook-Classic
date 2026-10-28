@@ -1,53 +1,54 @@
-# M9: Architektur und Zielumgebung
+# M9: architecture and target environment
 
-Zielarchitektur des begonnenen M9-Schritts. Die VBA-Implementierung bleibt die funktionale Referenz; ein Outlook-VSTO-Host, Installer und Deployment sind noch nicht vorhanden.
+Target architecture for the started M9 milestone. The VBA implementation remains the functional reference; an Outlook VSTO host, installer, and deployment are not yet available.
 
-## Ziel
+## Target
 
-- C# und **.NET Framework 4.8** als zunächst festgelegte gemeinsame Zielbasis für Fachlogik und späteren VSTO-Host. Die installierte Runtime allein ersetzt kein Targeting-Pack.
-- Outlook Classic unter Windows, erster Pilot mit **64-Bit-Office**. Fachlogik und Referenztests sind AnyCPU; Host, Interop, VSTO-Runtime und spätere native Abhängigkeiten müssen zur Zielumgebung geprüft werden. 32-Bit-Office ist noch nicht abgenommen.
-- Reguläres Outlook-VSTO-Projekt aus der Visual-Studio-Vorlage, mit generiertem Host-/Designer-Code, regulärem Build und Publish-Werkzeugen. Kein handgeschriebener Ersatzhost und keine kopierten Office-Assemblies aus lokalen Pilotprojekten.
-- M0–M8 als angestrebte funktionale Ausgangsbasis: Sortierung, Archivierung, Matcher, Stufen, Vorschläge, Audit und Regelrunde. Teilportierungen aktivieren keine produktiven Aktionen. M10 mit zusätzlicher Detail-Textbox bleibt ausdrücklich nach der Migration.
+- C# and **.NET Framework 4.8** are the initial shared target for the core and future VSTO host. An installed runtime does not replace a targeting pack.
+- Classic Outlook on Windows; the first pilot targets **64-bit Office**. The core and reference tests are AnyCPU. Verify the host, interop, VSTO runtime, and future native dependencies against the target environment. 32-bit Office has not been accepted.
+- Use a regular Outlook VSTO project from a Visual Studio template, generated host/designer code, and standard build/publish tools. Do not substitute a hand-written host or copy Office assemblies from local pilot projects.
+- M0-M8 define the intended functional starting point: sorting, archiving, matching, safety levels, proposals, audit, and rules review. Partial ports do not enable production actions. M10's additional detail text box remains after the migration.
 
-## Voraussetzungen und Nachweisgrenzen
+## Prerequisites and evidence limits
 
-Die erste Zielumgebung ist Windows mit Outlook Classic in 64 Bit. Für den regulären Build werden Visual Studio mit Office/VSTO-Werkzeugen und .NET-Framework-4.8-Targeting-Pack benötigt. Eine installierte Framework- oder VSTO-Runtime allein ersetzt diese Werkzeuge nicht.
+The first target environment is Windows with 64-bit classic Outlook. A regular build requires Visual Studio with Office/VSTO development tools and the .NET Framework 4.8 targeting pack. Installing Framework or VSTO runtimes alone does not provide those tools.
 
-Der eingeschränkte Runtime-Testweg des C#-Kerns ist unabhängig vom Office-Host. Er bestätigt weder einen regulären net48-Build noch Installation oder Start eines Outlook-Add-ins. Aktuelle Checks des veröffentlichten Snapshots stehen in [PUBLICATION.md](../../PUBLICATION.md).
-## Struktur des gestarteten Codes
+The core's limited runtime test path is independent of the Office host. It does not establish a regular net48 build, installation, or Outlook add-in startup. Recorded snapshot checks are in [PUBLICATION.md](../../PUBLICATION.md).
+
+## Current code structure
 
 ```text
 dotnet/NinjaRmm.Outlook.sln
-  NinjaRmm.Outlook.Core          reine Fachlogik, keine Office-/Netzwerkzugriffe
-  NinjaRmm.Outlook.Core.Tests    ausführbare Referenztests ohne NuGet/Office/Zugangsdaten
+  NinjaRmm.Outlook.Core          pure logic; no Office or network access
+  NinjaRmm.Outlook.Core.Tests    executable reference tests; no NuGet/Office/credentials
 
-noch ausstehend:
-  Infrastruktur                API, Token, Credential Manager, Dateien und Migration
-  Outlook-VSTO-Host             Outlook-Adapter, Ribbon, Ereignisse, Review-Dialog
+not yet implemented:
+  Infrastructure                API, tokens, Credential Manager, files, migration
+  Outlook VSTO host             Outlook adapters, Ribbon, events, review dialog
 ```
 
-Die bisherigen VBA-Dateien bleiben unverändert. Der initiale C#-Kern implementiert `ArchivePolicy`, `MatchLevels` und `TicketParsing`. API, vollständiger Matcher, Audit, Speicherung, Vorschläge und Dialoge sind noch nicht portiert.
+The VBA files remain in place. The initial C# core implements `ArchivePolicy`, `MatchLevels`, and `TicketParsing`. The API, full matcher, audit, storage, proposals, and dialogs have not yet been ported.
 
-API- und Dateioperationen werden über getrennte Schnittstellen eingebunden. Office-Objekte verbleiben im Host-/STA-Kontext; HTTP und reine Datenarbeit benötigen Zeitlimits, Abbruch und eine kontrollierte Rückkehr zum UI-Kontext. Startup darf keine doppelte VBA-/Add-in-Verarbeitung starten.
+API and file operations will use separate interfaces. Keep Office objects in the host/STA context. HTTP and data work require timeouts, cancellation, and controlled return to the UI context. Startup must prevent duplicate VBA/add-in processing.
 
-## Bewusste Typ- und Fehlerentscheidungen
+## Explicit type and error-handling decisions
 
-- Unbekanntes Schließdatum wird als `DateTime? = null` abgebildet statt als VBA-Datumswert `0`. Archivfunktionen erhalten lokales Datum, heutigen Tag und Kultur explizit; UTC-Konversion bleibt eine gesonderte Aufgabe.
-- Ungültige numerische Ticketzustände werfen eine Ausnahme. Der VBA-`Case Else` für den Fallback wird nicht auf ungültige .NET-Enumwerte ausgedehnt; der spätere API-Adapter muss Fehler ausdrücklich auf `Unavailable` abbilden.
-- Konfiguration ist instanzgebunden statt globaler Testüberschreibungen. Die fünf Regelstufen beginnen wie in VBA mit `LogOnly`, globale Obergrenze `3`.
-- Regex-Zeitlimits begrenzen die Verarbeitung; ein Timeout wird nicht als Treffer behandelt. Der spätere Aufrufer muss ihn sicher protokollieren. ASCII-Ziffern erhalten die Ticketnummernsemantik; Ordnerpräfixe werden ordinal verglichen.
-- Audit, Regeln und Ablehnungen werden vor dem ersten Schreibzugriff auf .NET-Seite versioniert und mit Sicherung/Rückweg migriert. Dieser Startschritt liest oder ändert keine vorhandenen Benutzerdateien oder Credentials.
-- Persistente Konversationszuordnung über Neustarts bleibt eine offene Entscheidung; der bisherige In-Memory-Stand gilt nicht als bereits vorhandene Persistenz.
+- Represent unknown closing dates as `DateTime? = null`, rather than VBA date value `0`. Archive functions receive local dates, the current day, and culture explicitly; UTC conversion remains separate work.
+- Invalid numeric ticket states throw exceptions. VBA's fallback `Case Else` is not extended to invalid .NET enum values. The future API adapter must explicitly map failures to `Unavailable`.
+- Configuration belongs to instances instead of global test overrides. All five rules start at `LogOnly`, with a global cap of `3`, as in VBA.
+- Regex timeouts limit processing; a timeout is not a match. Future callers must log it safely. ASCII digits preserve ticket-number semantics; folder-prefix comparisons are ordinal.
+- Version audit, rules, and rejection data before the first .NET write. Test migration with backups and recovery. This foundation does not read or change existing user files or credentials.
+- Persistent conversation assignments across restarts remain an open decision. The current in-memory implementation is not persistent storage.
 
-## Erforderliche reguläre Entwicklungswerkzeuge
+## Regular development tools
 
-Benötigt wird eine für das Unternehmen lizenzierte Visual-Studio-Ausgabe mit Office/VSTO-Werkzeugen, z. B. Visual Studio 2022 mit:
+Use a Visual Studio edition whose license permits the intended use, with Office/VSTO tools. For example, Visual Studio 2022 with:
 
 - Workload `Microsoft.VisualStudio.Workload.Office` (Office/SharePoint development).
-- Komponente `Microsoft.VisualStudio.Component.TeamOffice` (VSTO), ClickOnce-Werkzeugen und MSBuild.
-- .NET Framework 4.8 SDK und Targeting-Pack/Developer Tools.
-- Passenden Outlook-Interop-/Office-Referenzen aus der regulären Entwicklungsumgebung.
+- `Microsoft.VisualStudio.Component.TeamOffice` (VSTO), ClickOnce tools, and MSBuild.
+- .NET Framework 4.8 SDK and targeting pack/developer tools.
+- Appropriate Outlook interop and Office references from the regular development environment.
 
-Die Installation ist in diesem Schritt nicht erfolgt. Nach Einrichtung zuerst `tools/Test-DotNetCore.ps1` ohne Diagnoseschalter ausführen, dann ein reguläres Outlook-VSTO-Add-in-Projekt in diese Solution aufnehmen und den ersten Host-/Ribbonstart gesondert prüfen.
+After setup, run `tools/Test-DotNetCore.ps1` without the diagnostic switch. Then add a regular Outlook VSTO add-in project to the solution and validate actual host/Ribbon startup separately.
 
-Quellen, am 27.10.2026 geprüft: [Microsoft: Office-Entwicklungsumgebung](https://learn.microsoft.com/en-us/visualstudio/vsto/how-to-configure-a-computer-to-develop-office-solutions?view=visualstudio), [Microsoft: VS-2022-Komponenten](https://github.com/MicrosoftDocs/visualstudio-docs/blob/main/docs/install/includes/vs-2022/workload-component-id-vs-community.md). Die Nennung der Komponentenliste legt keine Community-Lizenz für das Unternehmen fest.
+Sources checked on October 27, 2026: [Microsoft: Office development environment](https://learn.microsoft.com/en-us/visualstudio/vsto/how-to-configure-a-computer-to-develop-office-solutions?view=visualstudio), [Microsoft: Visual Studio 2022 components](https://github.com/MicrosoftDocs/visualstudio-docs/blob/main/docs/install/includes/vs-2022/workload-component-id-vs-community.md). Linking the Community component list does not determine licensing eligibility for a particular organization or use case.

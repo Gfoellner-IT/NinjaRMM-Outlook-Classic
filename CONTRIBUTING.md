@@ -9,3 +9,7 @@ This source preview targets classic Outlook for Windows. Read [README.md](README
 - For the C# core, use `tools/Test-DotNetCore.ps1`; `-RuntimeOnly` is a limited diagnostic, not a VSTO build.
 - Document completed changes in `CHANGELOG.md`, current behavior in `README.md`, and future work in `ROADMAP.md`.
 - This publication history receives reviewed source snapshots. Never merge an older internal repository history or import its branches/tags. Submit changes against this repository's own history.
+
+## Documentation language
+
+Write all repository documentation in English (United States, en-US), including repository descriptions, guides, contributor and agent instructions, and pull request descriptions. Keep CHANGELOG.md for completed changes, README.md for current behavior, and ROADMAP.md for future work. Preserve identifiers, configuration keys, localized runtime literals, and license notices. Chat replies may follow the user's preferred language.

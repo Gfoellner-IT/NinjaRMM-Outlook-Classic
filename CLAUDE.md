@@ -1,66 +1,79 @@
-# CLAUDE.md
+# Contributor and agent instructions
 
-## Projekt
+## Project
 
-VBA-Projekt für **Outlook Classic** (Outlook 2019+), das Ticket-Mails von NinjaRMM (lokal konfigurierte Instanz) automatisch in Ticket-Ordner einsortiert und geschlossene Tickets per NinjaRMM-API ins Archiv verschiebt. Ticketerstellung wurde mit M2 entfernt und bleibt außerhalb des Funktionsumfangs; siehe ROADMAP. Kommentare und Meldungen im Altbestand sind überwiegend deutsch, neuer Code ist englisch. Weitere Hintergründe: `README.md`.
+This VBA project for **classic Outlook** (original target: Outlook 2019+) sorts NinjaRMM/NinjaOne ticket emails into ticket folders and archives closed tickets using the API of a locally configured instance. Ticket creation was removed in M2 and remains out of scope. Existing runtime UI/status values include German text; new code and comments are English. See `README.md` for current behavior.
 
-Für VBA gibt es **keinen Build und keine CI**. Der gestartete .NET-Kern hat eine eigene Solution und `tools/Test-DotNetCore.ps1`; die lokale Runtime-Diagnose ist kein regulärer VSTO-Build. Der Code ist exportierter VBA-Quelltext (`.bas`, `.cls`, `.frm`/`.frx`), der manuell in den VBA-Editor von Outlook (`Alt+F11`) importiert wird. Unit-Tests für Logik ohne Outlook-Typen laufen headless (siehe „Arbeitsweise“), alles andere wird im VBA-Editor von Outlook getestet.
+VBA has **no build or CI pipeline**. Exported `.bas`, `.cls`, `.frm`/`.frx` files are imported manually in Outlook's VBA editor (`Alt+F11`). Logic without Outlook types can be tested headlessly; Outlook-specific code requires the editor and test PST. The initial .NET core has a solution and `tools/Test-DotNetCore.ps1`; its runtime diagnostic is not a regular VSTO build.
 
-## Stand und geplante Migration
+## Current scope and migration
 
-Dieses Repository enthält einen eigenständigen Quellstand mit VBA-Automation und initialem .NET-Kern. Aktueller Funktionsumfang: `README.md`; veröffentlichte Änderungen: `CHANGELOG.md`; offene Arbeiten: `ROADMAP.md`; Import: `IMPORT.md`.
+This repository contains a standalone source snapshot with VBA automation and an initial .NET core. Use `README.md` for the current scope, `CHANGELOG.md` for completed changes, `ROADMAP.md` for open work, and `IMPORT.md` for upgrades.
 
-M9 plant die Migration zu einem C#/.NET-Framework-VSTO-Add-in für Outlook Classic. Ein erster .NET-Framework-Kern mit Referenztests liegt unter `dotnet/`; VSTO-Host und Installer existieren noch nicht. Architektur und Toolchain stehen in `docs/m9/architecture.md`. Zielumgebung, Funktionsumfang und Deployment werden zuerst festgelegt; die Beschreibung ist keine implementierte Funktion. Ein Word-VSTO-Beispiel ersetzt keine Outlook-Abnahme. Neues Outlook benötigt eine eigene Architekturentscheidung.
+M9 is the migration to a C#/.NET Framework VSTO add-in for classic Outlook. The initial core and reference tests are under `dotnet/`; a VSTO host and installer do not yet exist. Architecture/toolchain details are in `docs/m9/architecture.md`. Define the target environment, functional scope, and deployment before claiming implementation. A Word VSTO pilot does not establish Outlook acceptance. New Outlook requires a separate architecture decision.
 
-## Basisstruktur (M0–M5; Erweiterungen M6–M8 in der README)
+## Language policy: en-US
 
-- `outlook/` – eigener Code
-  - `Ticketautomatismus.bas` – **nur Outlook-Einstiegspunkte** (seit M3, ASCII/englisch, Regelpfade ohne Dialoge, explizites Fortschrittsfenster, Fehler in `TicketLog`): `RunEmailRule`, `RunEmailRuleScript(mail)` (Regel „Skript ausführen“), `RunArchiveRule`, `RunArchiveRuleWithProgress` (nicht-modales `ProgressForm` über `IProgressSink`/`ProgressSinkForm`), `StartMailWatcher`/`StopMailWatcher` (ereignisgesteuert über `TicketMailWatcher`, `Items.ItemAdd`; aus `Application_Startup` zu starten), `ProcessEmail` (Kompatibilität). Die Logik liegt in `TicketService.bas` (`ProcessMail`, `ArchiveClosedTickets`), reine Helfer in `TicketParsing`, `TicketDecision` (`DecideArchive`), `TicketConfig` (Konstanten inkl. `ENABLE_OFFLINE_FALLBACK = True`), `TimeUtil` (UTC→lokal), `TicketLog`. Outlook-Zugriff nur über die Schnittstellen `ITicketStore`/`ITicketFolder`/`IIncomingMail` und die dünnen Adapter `OutlookTicketStore`/`OutlookTicketFolder`/`OutlookIncomingMail` (diese Adapter sowie Einstiegspunkte und Watcher benötigen zusätzlich Outlook-Tests).
-  - **API (read-only, seit M2):** `NinjaApi.bas` (`GetTicketState` mit `NinjaTicketOpen/Closed/NotFound/Unavailable`, `IsTicketClosed` = geschlossen, gelöscht oder 404, `GetTicketSubject`, `GetTicketClosedDate` = neuester Log-Eintrag mit Statuswechsel auf „Geschlossen“/„Closed“ oder `DELETE`, Zeit in UTC, 0 = unbekannt, `LastError`), `NinjaTicketLogic.bas` (reine Antwortlogik), `INinjaTransport.cls` + `NinjaTransport.cls` (HTTP-Naht mit Bearer-Token, UTF-8, ein Retry nach 401), `JsonLite.bas` (JSON-Parser ohne Verweise; `Parse`, `TryParse`, `GetString`/`TryGetNumber`/`GetBoolean`/`GetNode` per Punktpfad). Base-URL `NinjaAuth.NINJA_API_BASE_URL`. Ticketerstellung wurde entfernt.
-  - **Authentifizierung (OAuth2 Client Credentials, seit M1):** `NinjaAuth.bas` (`GetAccessToken`, Token-Cache im Speicher, Fehlernummern `ERR_NO_CREDENTIAL`/`ERR_TOKEN_REQUEST`/`ERR_TOKEN_RESPONSE`, `IsServiceUnavailable` für den Offline-Fallback), `NinjaTokenLogic.bas` (reine Logik: Request-Body, Token-Antwort, Ablauf), `NinjaCredentialStore.bas` (Windows Credential Manager per `CredReadW`), `ITokenFetcher.cls` + `HttpTokenFetcher.cls` (HTTP-Naht, `MSXML2.ServerXMLHTTP.6.0`).
-  - `ProgressHelper.bas` + `forms/ProgressForm.frm` – Fortschrittsanzeige (`ProgressStart/Update/Step/End`).
-- `Tests/` – Unit-Test-Framework und Tests: `TestAssert.bas` (Assertions), `TestRunner.bas` (**generiert** mit `tools/New-TestRunnerModule.ps1`, nicht von Hand ändern; dasselbe Skript erzeugt `IntegrationRunner.bas` aus `Outlook*Tests.bas`; `RunAllTests`, `RunFailureProbe`, `RunLiveTests`; schreibt `%TEMP%\ninja_test_results.txt`), `SelfTests.bas`, `JsonLiteTests`, `NinjaTokenLogicTests`, `NinjaCredentialStoreTests`, `NinjaAuthTests` (mit `FakeTokenFetcher.cls`), `NinjaTicketLogicTests`, `NinjaApiTests` (mit `FakeNinjaTransport.cls`), `TicketParsingTests`, `TicketDecisionTests`, `TimeUtilTests`, `TicketServiceTests` (mit `FakeTicketStore.cls`, `FakeTicketFolder.cls`, `FakeMail.cls`); **Outlook-typisierte Integrationstests** `OutlookAdapterTests.bas` + `IntegrationRunner.bas` (generiert, `RunIntegrationTests`, F5, nur im Test-PST `NinjaTest`, geschützt durch `outlook/OutlookTestGuard.bas`; Ergebnis `%TEMP%\ninja_integration_results.txt`; nicht in `unit-test-modules.txt`), `LiveTests.bas` (opt-in, echter Token-Abruf), `Fixtures.bas` (**generiert** aus `Tests/fixtures/*.json` mit `tools/New-FixturesModule.ps1`, nicht von Hand ändern). Neue Tests: `Public Sub Test_Name()` in einem `*Tests.bas`-Modul anlegen und `tools\New-TestRunnerModule.ps1` ausführen (Outlook hat kein `Application.Run`, daher werden die Aufrufe generiert). Alt: manuelles Makro `ProgressFormTests`.
-- `tools/` – PowerShell-Hilfen: `Invoke-VbaTests.ps1` (headless Unit-Tests, `-Probe` prüft den Runner, `-Live` macht einen echten Token-Abruf), `unit-test-modules.txt`, `ninja-smoketest.ps1` (lesender Live-Test der API mit dem Credential-Manager-Eintrag), `New-FixturesModule.ps1`, `New-TestRunnerModule.ps1`, `Test-VbaFiles.ps1` (prüft CRLF und ASCII-only; vor jedem Commit ausführen).
+- Maintain **all repository documentation in English (United States, en-US)**: repository descriptions, README, roadmap, changelog, import/configuration/development guides, contributor/agent instructions, and PR descriptions.
+- Use US English spelling and terminology for new and updated documentation. Existing English documents remain part of this policy.
+- Conversation with a user may follow that user's preferred language. Documentation committed to this repository must still be en-US.
+- Preserve identifiers, file paths, serialized keys, literal configuration values, localized API status names, and license/copyright notices. Documentation translation alone must not translate runtime UI or change application behavior.
+- New/changed code, comments, identifiers, and messages use English, subject to explicit localization requirements. VBA source remains ASCII with CRLF; Markdown is UTF-8.
 
-## Dokumentation nach Zeitbezug
+## Source structure
 
-- `CHANGELOG.md`: abgeschlossene Änderungen und historische Nachweise, mit Datum und Release-/Branch-/Abnahmestatus.
-- `README.md`: aktueller Funktionsumfang, Voraussetzungen, Installation, Konfiguration und Bedienung; Branch-Geltungsbereich ausdrücklich nennen.
-- `ROADMAP.md`: ausschließlich offene Aufgaben, geplante Änderungen, Abhängigkeiten und Abnahmekriterien. Erledigte Punkte in das Changelog überführen und den aktuellen Zustand in der README nachziehen.
-- Historische Testergebnisse weder als aktuelle Verifikation noch lokale Implementierung als veröffentlichten Release darstellen. In den drei Dateien Inhalte verlinken statt denselben Verlauf mehrfach fortzuschreiben.
+- `outlook/` contains production VBA.
+  - `Ticketautomatismus.bas` contains Outlook entry points only: `RunEmailRule`, `RunEmailRuleScript(mail)`, `RunArchiveRule`, `RunArchiveRuleWithProgress`, `StartMailWatcher`/`StopMailWatcher`, and compatibility `ProcessEmail`. Rule paths show no dialogs and log errors through `TicketLog`; the explicit progress command displays a modeless form.
+  - `TicketService.bas` contains logic without Outlook types (`ProcessMail`, `ArchiveClosedTickets`, matching actions). Pure helpers include `TicketParsing`, `TicketDecision`, `TicketConfig`, `TimeUtil`, and `TicketLog`. The offline fallback defaults to `True`.
+  - `ITicketStore`, `ITicketFolder`, and `IIncomingMail` separate the logic from `OutlookTicketStore`, `OutlookTicketFolder`, and `OutlookIncomingMail`. Adapters, entry points, and the watcher also require Outlook tests.
+  - Read-only API modules: `NinjaApi`, `NinjaTicketLogic`, `JsonLite`, `INinjaTransport`, and `NinjaTransport`. Four states distinguish Open, Closed, NotFound, and Unavailable. Closed/deleted/not-found tickets count as closed; missing closing dates return 0. Recognize configured localized closed-status names or a deletion event, and convert UTC before selecting the archive month. Transport uses MSXML2, UTF-8, and one fresh-token retry after 401.
+  - Authentication: `NinjaAuth`, `NinjaTokenLogic`, `NinjaCredentialStore`, `ITokenFetcher`, and `HttpTokenFetcher`. OAuth2 client credentials, in-memory token cache, Windows Credential Manager; no browser. Preserve the established error constants and unavailable-state handling.
+  - `LocalSettings.bas` reads non-secret installation settings from the local INI file. `NinjaAuth.NINJA_API_BASE_URL` supplies the configured base.
+  - Matching, audit, manual assignments, reports, learned rules, safety levels, and review dialogs are documented in `README.md`; their open acceptance tasks are in `ROADMAP.md`.
+  - `ProgressHelper` and `forms/ProgressForm.frm` provide `ProgressStart/Update/Step/End`; `IProgressSink`/`ProgressSinkForm` separate the UI from archive logic.
+- `Tests/` contains the assertion framework, fake adapters, logic tests, Outlook integration tests, and generated modules.
+  - `TestRunner.bas` is generated by `tools/New-TestRunnerModule.ps1`. It provides `RunAllTests`, `RunFailureProbe`, and opt-in `RunLiveTests`; results go to `%TEMP%\ninja_test_results.txt`.
+  - The same generator writes `IntegrationRunner.bas` from `Outlook*Tests.bas`. Run `IntegrationRunner.RunIntegrationTests` manually (F5) only in the guarded `NinjaTest` PST; results go to `%TEMP%\ninja_integration_results.txt`.
+  - `Fixtures.bas` is generated from `Tests/fixtures/*.json`, the source of truth, with `tools/New-FixturesModule.ps1`.
+  - Add `Public Sub Test_Name()` procedures in a `*Tests.bas` module and regenerate the runner. Outlook has no `Application.Run`; generated explicit calls are required. The legacy progress-form test macro is separate.
+- `tools/` contains headless tests, module lists, fixture/runner/form generators, the optional read-only API smoke test, and file checks.
 
-## Arbeitsweise
+## Documentation by time frame
 
-- **Human-in-the-loop:** Ausführbaren VBA-Code erst nach Outlook-Test und Freigabe veröffentlichen. Ein ausdrücklich beauftragter reiner Dokumentations-PR darf ohne Outlook-Import gepusht werden. Branch pro Meilenstein, kleine Commits; kein automatischer Merge.
-- **Unit-Tests, wo möglich und sinnvoll:** neue oder geänderte Logik wird mit Tests geliefert. Reine Logik (Parsing, Datum, JSON-Auswertung) hat Vorrang. HTTP wird hinter einer Schnittstelle gefakt, Outlook-Ordnerlogik wird nur gegen ein Test-PST getestet, nie gegen das produktive Postfach. Neue Funktionen, die getestet werden sollen, werden `Public` angelegt.
-- **Nicht im Scope:** Ticketerstellung in NinjaRMM. Dafür keinen neuen Code schreiben.
-- **Sprache:** Neuer und geänderter Code, Kommentare, Bezeichner und Meldungen auf **Englisch**. Neue Dateien sind **ASCII-only** (keine Umlaute), weil der VBA-Editor beim Import ANSI liest. Bestehende deutsche Kommentare werden bei Gelegenheit (M5) übersetzt.
-- **Tests ausführen:** Unit-Tests ohne Outlook-Typen laufen headless mit `tools\Invoke-VbaTests.ps1` (wegwerfbare Excel-Instanz, braucht `AccessVBOM=1` für Excel; Exit 0 = grün, 1 = Testfehler, 2 = Umgebungsproblem). Vor jedem Commit: `tools\Invoke-VbaTests.ps1` und `tools\Test-VbaFiles.ps1`. Module für diesen Lauf stehen in `tools\unit-test-modules.txt`; Logik ohne Outlook-Typen deshalb in eigene Module legen. Outlook-abhängige Tests starten vorerst manuell (`RunAllTests` im VBA-Editor), Ergebnis in `%TEMP%\ninja_test_results.txt`. Sicherheitseinstellungen (`AccessVBOM`, Makro-Level, Zertifikate) ändert Claude nicht, der Nutzer setzt sie selbst.
-- **Integrationstests nur im Test-PST:** Der Store `NinjaTest` (lokale PST-Datei mit Anzeigenamen `NinjaTest`, kein Konto) ist die einzige Umgebung, in der Tests Outlook-Ordner und -Mails anlegen/löschen. Immer über `OutlookTestGuard.FindTestTicketsFolder` zugreifen, nie über den Standardposteingang.
-- Das produktive Outlook-VBA-Projekt (`%APPDATA%\Microsoft\Outlook\VbaProject.OTM`) nie ohne vorherige Sicherung und Rückfrage verändern. Nach jedem Push-Kandidaten testet der Nutzer in Outlook.
-- Offline-Fallback beim Archivieren (seit M3): `ENABLE_OFFLINE_FALLBACK` ist standardmäßig `True`; Entscheidung in `TicketDecision.DecideArchive`, getestet in `TicketDecisionTests`/`TicketServiceTests`.
-- Python ist auf diesem Rechner nur ein Store-Stub. Skripte in PowerShell oder Node schreiben.
-- Plan und Zielarchitektur: `ROADMAP.md`. Die Anmeldung läuft seit M1 über Client Credentials (Secret im Windows Credential Manager, Zielname aus `CredentialTarget` in lokalen Einstellungen, Benutzername = Client-ID, Kennwort = Secret).
-- Nach dem Bearbeiten von Dateien (auch mit `sed -i`) immer `tools\Test-VbaFiles.ps1` ausführen: Zeilenenden können sich unbemerkt ändern. Markdown explizit als UTF-8 lesen und schreiben; VBA-Quellen bytegetreu als ASCII mit CRLF erhalten.
-- Secrets nie ausgeben, loggen oder speichern. Aufrufe gegen die produktive Ninja-API nur lesend.
+- `CHANGELOG.md`: completed changes and historical evidence, with dates and release/branch/acceptance status.
+- `README.md`: current scope, prerequisites, installation, configuration, and operation; state branch/revision scope where relevant.
+- `ROADMAP.md`: open tasks, planned changes, dependencies, and acceptance criteria only. Move completed items to the changelog and update the README to reflect current behavior.
+- Link between documents instead of duplicating history. Do not present historical test results as current checks or a local implementation as a published release.
 
-## Konventionen
+## Workflow
 
-- `Option Explicit` in jedem Modul; `PtrSafe`-Declares (64-bit Outlook).
-- VBA-Dateien sind **ASCII mit CRLF**; Sonderzeichen über `ChrW` bilden. Markdown ist UTF-8. Beim Bearbeiten die jeweilige Kodierung und Zeilenenden erhalten. Die `Attribute VB_Name`-Zeilen und Klassen-Header (`VERSION 1.0 CLASS …`) nicht entfernen.
-- Versionskommentar im Modulkopf (`Ticketautomatismus v2.0.0`, `NinjaApi v0.2.0`) bei inhaltlichen Änderungen mitpflegen.
-- Neue Outlook-Objekte immer mit `Nothing`-Prüfungen und Fehlerbehandlung verwenden. Einstiegsmakros laufen aus Outlook-Regeln heraus und dürfen keine unbehandelten Fehler oder Dialoge werfen.
-- Konfiguration steht in `TicketConfig.bas` (`FOLDER_TICKETS`, `FOLDER_ARCHIVE`, `AllowedSender()`, `REGEX_*`, `ENABLE_OFFLINE_FALLBACK`). Ticketnummern kommen aus dem Betreff (`[example] (#1234) …`) und aus Ordnernamen (`#1234 (Betreff)`).
+- **Human review:** publish executable VBA changes only after Outlook testing and approval. An explicitly requested documentation-only PR can be pushed without importing it into Outlook. Use a branch per milestone and small commits; do not merge automatically.
+- Add meaningful tests for new/changed logic. Prioritize pure parsing, dates, JSON evaluation, and decision functions. Fake HTTP through interfaces. Test Outlook folders only in the isolated PST, never the production mailbox. Make testable functions `Public` where necessary.
+- Ticket creation is out of scope. Calls to the production NinjaOne API must remain read-only.
+- `tools/Invoke-VbaTests.ps1` uses a disposable Excel instance and requires Excel `AccessVBOM=1`. Exit codes: 0 passed, 1 test failures, 2 environment issue. The module list is `tools/unit-test-modules.txt`. Run the relevant code tests and `tools/Test-VbaFiles.ps1` before code commits. Documentation-only edits require diff, encoding, and link checks; do not rerun unrelated functionality just to translate prose.
+- Outlook tests are manual: import matching modules, compile with **Debug > Compile**, and run the appropriate macros. Read actual result files rather than assuming success.
+- Never change `AccessVBOM`, macro security, or certificates automatically. The user configures security settings.
+- `NinjaTest`, a local non-Exchange PST without an account, is the only store where integration tests may create/delete folders or messages. Always access it through `OutlookTestGuard.FindTestTicketsFolder`, never the default inbox.
+- Do not modify `%APPDATA%\Microsoft\Outlook\VbaProject.OTM` without a backup and user authorization. The user tests each executable push candidate in Outlook.
+- `ENABLE_OFFLINE_FALLBACK` defaults to `True`; archive decisions are in `TicketDecision.DecideArchive` with corresponding decision/service tests.
+- Prefer PowerShell or Node for local helper scripts; verify runtime availability before relying on Python.
+- Read client ID/secret from Windows Credential Manager only. `CredentialTarget` in local settings selects the entry; username is the client ID, password is the secret.
+- After editing source, run `tools/Test-VbaFiles.ps1`; preserve VBA bytes as ASCII/CRLF and read/write Markdown explicitly as UTF-8.
+- Never print, log, or commit secrets.
 
-## Sicherheit
+## Code conventions
 
-- Installationsdaten nur über `LocalSettings.bas` aus `%LOCALAPPDATA%\NinjaRMM-Outlook-Classic\settings.ini` lesen; Vorlage `config/settings.example.ini`. `.local/` nie veröffentlichen. Copyright-/Lizenzhinweise und die Git-Historie nicht als beiläufige Textbereinigung verändern. Siehe `PUBLICATION.md`.
+- Use `Option Explicit` in VBA modules and `PtrSafe` declarations compatible with the target Office bitness.
+- VBA source is **ASCII with CRLF**. Build non-ASCII characters with `ChrW`. Preserve `Attribute VB_Name` lines and class headers such as `VERSION 1.0 CLASS`.
+- Update module version comments for behavior changes.
+- Check new Outlook objects for `Nothing` and handle errors. Rule entry points must not raise unhandled errors or show dialogs.
+- Folder names, sender matching, patterns, and offline fallback are configured through `TicketConfig` and local settings. Ticket IDs come from notification subjects such as `[example] (#1234)` and folder names such as `#1234 (Subject)`.
 
-- Client-ID und Secret liegen **nur** im Windows Credential Manager, nie im Code, in Outlook-Items, Logs, Fehlermeldungen oder Testausgaben. Keine Client-ID, Tokens oder Secrets committen.
-- Das Verzeichnis `outlook/` enthält keine Zugangsdaten; so belassen. Tests legen nur eindeutige, temporäre Credential-Einträge (`NinjaRMM-Outlook-Classic/UnitTest/...`) an und löschen sie wieder.
+## Security and publication
 
-## Voraussetzungen zur Laufzeit
-
-- Keine zusätzlichen VBA-Verweise nötig (Regex, HTTP, JSON, Dictionary sind spät gebunden); alle Module müssen importiert sein, da sie sich gegenseitig referenzieren.
-- Zugriff auf die NinjaRMM-API: M2M-Anwendung („API Services“, Grant „Client Credentials“, Scope `monitoring`) und der Credential-Manager-Eintrag (generische Anmeldeinformation) wie oben beschrieben. Kein Browser nötig.
-- Outlook-Regel „Skript ausführen“ → `RunEmailRuleScript`, als letzte Regel der Liste.
+- Read installation settings through `LocalSettings.bas` from `%LOCALAPPDATA%\NinjaRMM-Outlook-Classic\settings.ini`; use `config/settings.example.ini` as the template. Never publish `.local/`.
+- Do not alter copyright/license notices or Git history as incidental text cleanup. See `PUBLICATION.md`.
+- Keep client IDs, secrets, and tokens out of source, Outlook items, logs, errors, and test output. Tests may create unique temporary Credential Manager entries under `NinjaRMM-Outlook-Classic/UnitTest/...` and must remove them.
+- No additional VBA references are needed for late-bound regex, HTTP, JSON, and dictionaries. Import all required modules together.
+- Runtime API access requires a NinjaOne API Services application with the Client Credentials grant, the `monitoring` scope, and the configured generic credential entry.
+- If using a **Run a script** Outlook rule, select `RunEmailRuleScript` and place that rule last. Prefer the documented mail watcher when available.

@@ -16,7 +16,7 @@ Snapshot verification on 2026-10-28:
 - 94 VBA source files pass ASCII/CRLF/header validation.
 - C# runtime diagnostic: 9 test groups, 0 failures, 283 assertions.
 - Synthetic fixtures and generated runners checked for consistency; local Markdown links and file encodings checked.
-- No productive Outlook installation, live API test, VSTO host start, signing or installer test was performed for this snapshot. The C# runtime diagnostic is not a regular net48/VSTO build.
+- No production Outlook installation, live API test, VSTO host start, signing or installer test was performed for this snapshot. The C# runtime diagnostic is not a regular net48/VSTO build.
 
 The 21 registered Outlook integration tests are a separate manual run against the local test PST. A source preview does not imply business acceptance, compatibility with every Office installation or a supported binary release.
 

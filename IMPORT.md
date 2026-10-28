@@ -1,109 +1,114 @@
-# Import M6 bis M8 in Outlook und gemeinsamer Test
+# Import M6 through M8 into Outlook and run the tests
 
-**Geltungsbereich: veröffentlichter VBA-Quellstand dieser Revision.** Diese Anleitung beschreibt das Upgrade eines älteren Basisprojekts um Matcher, Audit, Sicherheitsstufen und Dialoge. Die lokale Konfiguration muss zur Installation passen. Vollständige Outlook-Kompilierung und fachliche Abnahme sind vor Produktivbetrieb erforderlich. Die VSTO-Migration ist eine separate Aufgabe der [Roadmap](ROADMAP.md).
+**Scope: the published VBA source in this revision.** This guide upgrades an older M0–M5 project with matching and the ticket index (M6), audit logs, reports, manual assignments and learned rules (M7), and safety levels and review dialogs (M8). Configure the installation locally and compile and validate the complete project in Outlook before production use. The VSTO migration is separate work in the [roadmap](ROADMAP.md).
 
-Diese Anleitung beschreibt den integrierten Entwicklungsstand. Sie geht vom Stand aus, den du zuletzt in Outlook hattest (M0 bis M5), und enthält alles, was seitdem dazugekommen ist: Matcher und Ticketindex (M6), Audit-Log, Bericht, manuelle Zuordnungen und gelernte Regeln (M7), Sicherheitsstufen und Bestätigungsdialog (M8).
+**The matcher for other email starts in log-only mode:** all five rule levels default to 1. Existing ticket-notification sorting and archiving can still move messages or folders. Levels 2 and 3 enable actions only for the matcher.
 
-**Der Fremdmail-Matcher steht zunächst auf nur Logging:** Alle fünf Regelstufen sind 1. Die bestehende Sortierung von Ticket-Benachrichtigungen und die Archivierung können weiterhin Mails beziehungsweise Ordner verschieben. Stufe 2 oder 3 aktiviert Aktionen ausschließlich für den Matcher.
+Historical test results are in the [changelog](CHANGELOG.md). Headless tests cover the documented logic and simulated form cases in Excel; they do not validate Outlook types or actual dialog behavior in Outlook. Complete step 3 and record the module, line, and message for any compilation error.
 
-Aktuelle Testergebnisse stehen im [Changelog](CHANGELOG.md). Der Headless-Lauf prüft die dort genannten Logik- und Formularfälle in Excel, aber weder Outlook-Typen noch den tatsächlichen Outlook-Dialogbetrieb. Deshalb ist Schritt 3 (Kompilieren) erforderlich; bei Fehlern Modul, Zeile und Meldung notieren.
+## 0. Prepare
 
-## 0. Vorbereitung
+**For the cleaned publication:** create the [local configuration](docs/configuration.md) before importing. Also import `outlook\LocalSettings.bas` and replace `NinjaAuth`, `TicketConfig`, `TicketMatcher`, and the updated test modules. Neutral defaults replace the earlier installation settings. Repository changes do not automatically update an existing Outlook installation.
 
-**Nach der Veröffentlichungsbereinigung:** Vor dem Import die [lokale Konfiguration](docs/configuration.md) anlegen. `outlook\LocalSettings.bas` zusätzlich importieren und `NinjaAuth`, `TicketConfig`, `TicketMatcher` sowie die aktualisierten Testmodule ersetzen. Neutrale Defaults ersetzen die frühere Betriebs-Konfiguration; die vorhandene Outlook-Installation wird vom Repository nicht automatisch aktualisiert.
+1. Close Outlook.
+2. Back up the VBA project:
 
-1. Outlook schließen.
-2. Das VBA-Projekt sichern:
    ```powershell
    Copy-Item "$env:APPDATA\Microsoft\Outlook\VbaProject.OTM" "$env:APPDATA\Microsoft\Outlook\VbaProject.OTM.bak-$(Get-Date -Format yyyyMMdd)"
    ```
-3. Outlook starten, `Alt+F11` (VBA-Editor). Die Quelldateien liegen im selbst gewählten Repository-Checkout.
 
-## 1. Alte Module entfernen
+3. Start Outlook and open the VBA editor with `Alt+F11`. Use the source files from your repository checkout.
 
-Im Projekt-Explorer je Modul: Rechtsklick, *Entfernen…*, die Frage „Exportieren?“ mit **Nein** beantworten. `ThisOutlookSession` und alle nicht genannten Module bleiben.
+## 1. Remove the old modules
 
-**Aus `outlook\` (12 geänderte):** `IIncomingMail`, `INinjaTransport`, `ITicketFolder`, `NinjaTicketLogic`, `NinjaTransport`, `OutlookIncomingMail`, `OutlookTicketFolder`, `TicketConfig`, `TicketLog`, `TicketMailWatcher`, `TicketService`, `Ticketautomatismus`.
+In Project Explorer, right-click each listed module, choose **Remove**, and answer **No** when asked whether to export it (export separately first if needed). Keep `ThisOutlookSession` and modules not listed here.
 
-**Aus `Tests\` (3 Fakes, Pflicht, falls die Tests im Projekt sind):** `FakeNinjaTransport`, `FakeMail`, `FakeTicketFolder`. Sie implementieren Schnittstellen, die sich geändert haben. Bleiben die alten Versionen, meldet der Compiler z. B. „In diesem Objektmodul muß 'HttpPostJson' für die Schnittstelle 'INinjaTransport' implementiert sein“.
+**From `outlook\` (12 changed modules):** `IIncomingMail`, `INinjaTransport`, `ITicketFolder`, `NinjaTicketLogic`, `NinjaTransport`, `OutlookIncomingMail`, `OutlookTicketFolder`, `TicketConfig`, `TicketLog`, `TicketMailWatcher`, `TicketService`, `Ticketautomatismus`.
 
-Wird ein Modul nicht vorher entfernt, legt der Import eine Kopie `Name1` an und nichts kompiliert.
+**From `Tests\` (three fakes, required if tests are installed):** `FakeNinjaTransport`, `FakeMail`, `FakeTicketFolder`. Their interfaces have changed. Old versions can produce an error that `HttpPostJson` must be implemented for `INinjaTransport`.
 
-## 2. Importieren
+Importing without first removing the existing module creates a duplicate such as `Name1` and prevents compilation.
 
-*Datei > Datei importieren…* (`Strg+M`), eine Datei nach der anderen. Reihenfolge egal.
+## 2. Import the updated files
 
-**Aus `outlook` (36 Dateien):**
+Use **File > Import File** (`Ctrl+M`), one file at a time. Import order does not matter.
 
-| Neu (24) | Geändert (12) |
+**From `outlook\` (36 M6–M8 files; local-configuration modules are covered in step 0):**
+
+| New (24) | Changed (12) |
 |---|---|
 | `AuditLogic.bas`, `AuditReport.bas`, `ClipboardHelper.bas`, `FileAuditSink.cls`, `FormMatchPrompt.cls`, `FileRejectionStore.cls`, `GermanText.bas`, `IAuditSink.cls`, `IMatchPrompt.cls`, `IRejectionStore.cls`, `ITicketIndex.cls`, `LearnedRules.bas`, `ManualScan.bas`, `MatchLevels.bas`, `MatchPromptText.bas`, `MatchProposal.cls`, `MatchProposals.bas`, `MatchRejections.bas`, `MatchReview.bas`, `MatchTicket.cls`, `MsgBoxMatchPrompt.cls`, `NinjaTicketIndex.cls`, `TicketAudit.bas`, `TicketMatcher.bas` | `IIncomingMail.cls`, `INinjaTransport.cls`, `ITicketFolder.cls`, `NinjaTicketLogic.bas`, `NinjaTransport.cls`, `OutlookIncomingMail.cls`, `OutlookTicketFolder.cls`, `TicketConfig.bas`, `TicketLog.bas`, `TicketMailWatcher.cls`, `TicketService.bas`, `Ticketautomatismus.bas` |
 
-**Aus `Tests` (3 Dateien):** `FakeNinjaTransport.cls`, `FakeMail.cls`, `FakeTicketFolder.cls`.
+**From `Tests\` (three files):** `FakeNinjaTransport.cls`, `FakeMail.cls`, `FakeTicketFolder.cls`. For a complete test update, follow step 10.
 
-**Aus `forms` (1 Formular, empfohlen):** `ReviewForm.frm` (die Datei `ReviewForm.frx` muss im selben Ordner liegen). Das ist der Bestätigungsdialog mit Liste (Dialog B). Fehlt das Formular im Projekt oder lässt es sich nicht importieren, zeigt Outlook die Vorschläge stattdessen mit einzelnen Fenstern (Dialog A), und es kommt ein Hinweis ins Log.
+**From `forms\` (one recommended form):** `ReviewForm.frm`, with `ReviewForm.frx` in the same directory. This provides the list-based review dialog (dialog B). If the form is absent or cannot be imported, Outlook falls back to individual message boxes (dialog A) and logs a notice.
 
-## 3. Kompilieren
+## 3. Compile
 
-*Debuggen > Kompilieren von Project1*. Kein Fehler: weiter. Sonst bitte Modul, Zeile und Meldung notieren oder Screenshot.
+Choose **Debug > Compile Project1**. Continue only after compilation succeeds. Record the module, line, and error message if it fails.
 
-## 4. Erster Lauf (nur lesen, nichts wird verschoben)
+## 4. Run a dry run
 
-Im Direktfenster (`Strg+G`), jeweils mit Enter:
+In the Immediate window (`Ctrl+G`), enter:
 
-```
+```vb
 Ticketautomatismus.RunMatchDryRun
 ```
 
-Ergebnis in `%TEMP%\ninja_ticket_log.txt` und `%LOCALAPPDATA%\NinjaRMM-Outlook-Classic\audit\match_audit_<Jahr>-<Monat>.jsonl`. Seit dem Datenschutz-Fix steht bei Mails ohne Treffer nur ein Hash des Betreffs im Log (`subject_hash=...`), der Betreff selbst nur bei Treffer oder Mehrdeutigkeit. Alte Audit-Dateien von früheren Läufen enthalten noch Betreffe: Du kannst sie löschen.
+This dry run does not move messages or queue proposals. Results go to `%TEMP%\ninja_ticket_log.txt` and `%LOCALAPPDATA%\NinjaRMM-Outlook-Classic\audit\match_audit_<year>-<month>.jsonl`. Unmatched messages are logged using a subject hash (`subject_hash=...`); matched or ambiguous results can include subjects. Older audit files may still contain subjects; review and remove them according to your retention requirements.
 
-## 5. Bestätigungsdialog ausprobieren (Stufe 2)
+## 5. Try the review dialog (level 2)
 
-1. In `TicketConfig` eine Regel auf Stufe 2 setzen, zum Beispiel `MATCH_LEVEL_SUBJECT = 2` (Stufen: 0 aus, 1 nur Logging, 2 Bestätigen, 3 automatisch; die globale Obergrenze `MATCH_LEVEL_MAX` steht auf 3). Speichern.
-2. Im Direktfenster `Ticketautomatismus.RunMatchReview` eingeben. Es werden die Mails der letzten 14 Tage geprüft. Mit importiertem Formular (Standard, `REVIEW_DIALOG = 2`) erscheint eine **Liste mit Ankreuzfeldern**: Mails ankreuzen, dann *Ausgewählte übernehmen* (verschiebt in den Ticketordner) oder *Ausgewählte ablehnen* (wird nicht wieder vorgeschlagen); *Alle auswählen* markiert alles; was beim *Schließen* übrig ist, bleibt ein Vorschlag. Ohne Formular (oder mit `REVIEW_DIALOG = 1`) erscheint je Vorschlag ein Fenster: **Ja** = übernehmen, **Nein** = ablehnen, **Abbrechen** = Prüfung beenden (die restlichen bleiben).
-3. Prüfe: Landet eine bestätigte Mail im richtigen Ticketordner (`#<Nummer> (<Betreff>)`)? Taucht eine abgelehnte Mail bei einem zweiten Aufruf nicht wieder auf?
-4. Die Hinweisfrage „Es gibt N neue Vorschläge für die Ticketzuordnung. Diese jetzt prüfen?“ kommt, wenn der Watcher nach einer neuen Mail Vorschläge hat (höchstens alle 15 Minuten). Beim Start von Outlook fragt der Durchlauf nie, die Frage kommt dann mit der nächsten neuen Mail oder du startest `RunMatchReview`.
+1. In `TicketConfig`, set one rule to level 2, for example `MATCH_LEVEL_SUBJECT = 2`, and save. Levels are 0 = off, 1 = log only, 2 = confirm, 3 = automatic. `MATCH_LEVEL_MAX` defaults to 3.
+2. Run `Ticketautomatismus.RunMatchReview` in the Immediate window. It checks messages from the last 14 days. With the imported form and the default `REVIEW_DIALOG = 2`, select messages using the checkboxes and choose the accept action to move them into the ticket folder, or reject to prevent another proposal. Select all checks every entry. Closing preserves undecided proposals. The current runtime captions remain German. Without the form, or with `REVIEW_DIALOG = 1`, each proposal has a message box: **Yes** accepts, **No** rejects, and **Cancel** ends the review while preserving remaining proposals.
+3. Verify that an accepted message arrives in the correct folder (`#<number> (<subject>)`) and a rejected message is not proposed again on the next run.
+4. When new email produces proposals, the watcher can offer to open the review, at most once every 15 minutes. The startup sweep does not ask; use the next arriving message or run `RunMatchReview` manually.
 
-Für den Test im Test-PST (`NinjaTest`) gilt weiter: Die Integrationstests laufen nur dort, nie im produktiven Postfach.
+Integration tests must run only in the isolated `NinjaTest` PST, never in the production mailbox.
 
-## 6. Menüleisten-Knopf einrichten
+## 6. Add ribbon buttons
 
-*Datei > Optionen > Menüband anpassen*:
-1. Rechts eine neue Registerkarte oder Gruppe anlegen (z. B. „Tickets“).
-2. Links bei „Befehle auswählen“ den Eintrag **Makros** wählen.
-3. `Project1.Ticketautomatismus.RunMatchReview` markieren, *Hinzufügen*, dann *Umbenennen* (z. B. „Vorschläge prüfen“) und ein Symbol wählen.
-4. Auf dieselbe Art kannst du hinzufügen: `RunMatchRulesReview` („Regeln prüfen“), `RunArchiveRuleWithProgress` und `RunEmailRule`.
+Open **File > Options > Customize Ribbon**:
 
-Nur Makros **ohne Parameter** erscheinen in der Liste. `RunMatchDryRun` (optionaler Parameter) und `RunEmailRuleScript` (Regelaktion) gehören nicht dazu.
+1. Create a new tab or group, such as **Tickets**.
+2. Under **Choose commands from**, select **Macros**.
+3. Add `Project1.Ticketautomatismus.RunMatchReview`, rename it to a suitable caption such as **Review proposals**, and choose an icon.
+4. Optionally add `RunMatchRulesReview`, `RunArchiveRuleWithProgress`, and `RunEmailRule`.
 
-## 7. Bericht und Regelrunde mit Claude
+Only macros without parameters appear. `RunMatchDryRun` has an optional parameter, and `RunEmailRuleScript` is a rule action; neither appears in this list.
 
-`Ticketautomatismus.RunMatchRulesReview` (oder der Knopf) sucht zuerst nach von Hand verschobenen Mails, schreibt dann den Bericht nach `%LOCALAPPDATA%\NinjaRMM-Outlook-Classic\reports\match_review_<Datum>.md` und legt einen Einleitungssatz in die Zwischenablage. In einer Claude-Sitzung im Repo-Ordner den Satz einfügen oder `/review-rules` tippen. Der Bericht enthält Zahlen, Domains, Ticketnummern und Betreffstämme von Mails mit Ticketbezug. Er übernimmt keine separaten Absendernamen oder Mailtexte; Betreffstämme können jedoch personenbezogene Angaben enthalten. Bericht vor Weitergabe prüfen.
+## 7. Create a report and review rules with Claude
 
-## 8. Gelernte Regeln (später)
+`Ticketautomatismus.RunMatchRulesReview` first scans manually moved messages, writes `%LOCALAPPDATA%\NinjaRMM-Outlook-Classic\reports\match_review_<date>.md`, and copies an introductory prompt to the clipboard. Paste the prompt in a Claude session opened in the repository, or enter `/review-rules`.
 
-Regeln stehen in `%LOCALAPPDATA%\NinjaRMM-Outlook-Classic\audit\match_rules.json` (die Datei gibt es nicht, solange du sie nicht anlegst). Der Bericht schlägt Regeln als JSON-Zeilen vor, zunächst mit `"enabled":false`. Zum Aktivieren `enabled` auf `true` setzen. Gelernte Regeln laufen als letzte Regel, auf der Stufe `MATCH_LEVEL_LEARNED` (Standard 1: nur Logging) und beschreiben eine Suche (Domain und Betreffstamm führen zum einzigen offenen Ticket mit diesem Stamm im Titel), keine Ticketnummern. Die Datei wird bei jedem Durchlauf und bei jedem Probelauf neu gelesen.
+The report includes counts, domains, ticket numbers, and subject stems of ticket-related messages. It does not copy separate sender names or message bodies, but subject stems can contain personal information. Review the report before sharing it.
 
-## 9. Gut zu wissen
+## 8. Use learned rules
 
-- **Wiederholte Einträge:** `RunEmailRule` und der Durchlauf beim Start prüfen die Fremdmails der letzten 14 Tage erneut und schreiben dabei jedes Mal Audit-Zeilen. Dieselbe Mail kann also mehrfach im Log stehen. Der Bericht zählt dieselbe automatische Entscheidung zu derselben Mail nur einmal (Schlüssel `msg`), die Erkennung manueller Zuordnungen legt jede Mail nur einmal an. Wer das vermeiden will, setzt `MATCH_SWEEP_DAYS = 0` in `TicketConfig`.
-- **Manuelle Zuordnungen:** Beim Start (und vor dem Bericht) werden Mails, die du von Hand in einen Ticketordner gezogen hast (letzte 30 Tage), einmal als `manual_assignment` im Audit-Log festgehalten, mit dem Ergebnis, was der Matcher getan hätte (`agree`, `differ`, `missed`, `excluded`, `unchecked`).
-- **Dauer beim Start:** Der Start-Durchlauf lädt einmal die offenen Tickets aus NinjaOne (etwa 3 Seiten) und sucht in allen Ticketordnern nach neuen, von Hand verschobenen Mails. Mit vielen Ticketordnern kann das einige Sekunden dauern. Ist es zu langsam, sag Bescheid; Stellschrauben sind `MANUAL_SCAN_DAYS`, `MATCH_SWEEP_DAYS` und `INDEX_CACHE_MINUTES` in `TicketConfig`.
-- **Audit-Log abschalten:** `ENABLE_AUDIT_LOG = False`. **Alle Regeln aus:** `MATCH_LEVEL_MAX = 0`.
-- **Signatur:** Nach dem Import ist das VBA-Projekt nicht mehr signiert. Bei Bedarf neu signieren (*Extras > Digitale Signatur*, eigenes freigegebenes Code-Signing-Zertifikat).
-- **Zurück zum alten Stand:** Outlook schließen, `VbaProject.OTM.bak-<Datum>` über `VbaProject.OTM` kopieren.
+Rules are stored in `%LOCALAPPDATA%\NinjaRMM-Outlook-Classic\audit\match_rules.json`; the file does not exist until created. Reports propose JSON rule candidates with `"enabled":false`. Enable a reviewed rule explicitly by changing `enabled` to `true`.
 
-## 10. Alle Tests vollständig in Outlook importieren
+Learned rules run last at `MATCH_LEVEL_LEARNED` (default 1, log only). A rule defines a search: domain plus subject stem identifies the single open ticket with that stem in its title. It does not bind messages to a fixed ticket number. The rules file is reloaded for every regular run and dry run.
 
-Für den vollständigen Self-Test müssen die Testmodule zum importierten Produktionscode passen. Nur die drei Fakes aus Schritt 2 zu ersetzen aktualisiert den TestRunner und die übrigen Tests noch nicht.
+## 9. Operational notes
 
-1. VBA-Projekt wie in Schritt 0 sichern. Im Projekt-Explorer alle bereits vorhandenen Module aus der folgenden Liste entfernen; bei Bedarf vorher exportieren. Produktionsmodule und `ThisOutlookSession` bleiben erhalten.
-2. Jede der folgenden **39 Dateien aus `Tests\`** über *Datei > Datei importieren…* (`Strg+M`) importieren. Der Ordner `Tests\fixtures` enthält JSON-Quelldaten und wird nicht im VBA-Editor importiert; `Fixtures.bas` enthält die vorbereiteten Daten.
-3. Zusätzlich `outlook\OutlookTestGuard.bas` importieren. Falls das Modul bereits vorhanden ist, zuerst entfernen, damit keine Kopie `OutlookTestGuard1` entsteht.
-4. `ReviewForm` aus Schritt 2 muss vorhanden sein (oder gemäß Schritt 12 manuell angelegt werden), weil `ReviewFormTests` das Formular instanziiert. Der MsgBox-Fallback für den normalen Betrieb ersetzt diese Testvoraussetzung nicht.
-5. *Debuggen > Kompilieren von Project1* ausführen. Erst wenn das ohne Fehler durchläuft, mit dem Self-Test fortfahren. Bei Namen wie `TestRunner1`, `FakeMail1` oder anderen Importduplikaten zuerst die doppelten Module bereinigen.
+- **Repeated audit entries:** `RunEmailRule` and the startup sweep recheck other messages from the last 14 days, producing audit rows on each run. The report deduplicates the same automatic decision for a message using the `msg` key; manual assignment detection records each message once. Set `MATCH_SWEEP_DAYS = 0` in `TicketConfig` to disable the sweep.
+- **Manual assignments:** startup and report generation scan messages manually moved into ticket folders during the last 30 days. Each is recorded once as `manual_assignment`, with the hypothetical matcher result (`agree`, `differ`, `missed`, `excluded`, or `unchecked`).
+- **Startup duration:** the sweep loads open NinjaOne tickets (approximately three pages in the reference environment) and checks ticket folders for new manual assignments. Duration depends on folder volume. Review `MANUAL_SCAN_DAYS`, `MATCH_SWEEP_DAYS`, and `INDEX_CACHE_MINUTES` if necessary.
+- **Disable audit logging:** set `ENABLE_AUDIT_LOG = False`. **Disable all matching rules:** set `MATCH_LEVEL_MAX = 0`.
+- **Signing:** importing invalidates the VBA project's signature. If required, sign it again using **Tools > Digital Signature** and your approved code-signing certificate.
+- **Rollback:** close Outlook and restore `VbaProject.OTM.bak-<date>` over `VbaProject.OTM`.
 
-| Datei in `Tests\` | Modulname im Projekt-Explorer |
+## 10. Import the complete test suite into Outlook
+
+Test modules must match the production source revision. Replacing only the three fakes from step 2 does not update the runner or other tests.
+
+1. Back up the project as in step 0. Remove existing modules listed below from Project Explorer, exporting them first if needed. Keep production modules and `ThisOutlookSession`.
+2. Import each of the following **39 files from `Tests\`** using **File > Import File** (`Ctrl+M`). Do not import `Tests\fixtures`: it contains JSON source data, already represented in `Fixtures.bas`.
+3. Also import `outlook\OutlookTestGuard.bas`. Remove an existing copy first to avoid `OutlookTestGuard1`.
+4. Install `ReviewForm` from step 2 or create it manually as described in step 12. `ReviewFormTests` instantiates the form; the runtime message-box fallback does not satisfy this test prerequisite.
+5. Choose **Debug > Compile Project1**. Resolve all errors and duplicate modules such as `TestRunner1` or `FakeMail1` before running tests.
+
+| File in `Tests\` | Module name in Project Explorer |
 |---|---|
 | `AuditReportTests.bas` | `AuditReportTests` |
 | `AuditTests.bas` | `AuditTests` |
@@ -145,22 +150,22 @@ Für den vollständigen Self-Test müssen die Testmodule zum importierten Produk
 | `TicketServiceTests.bas` | `TicketServiceTests` |
 | `TimeUtilTests.bas` | `TimeUtilTests` |
 
-**Self-Test:** Im Modul `TestRunner` den Cursor in `RunAllTests` setzen und `F5` drücken. Erwartet werden **303 bestandene Tests, 0 Fehler**. Ergebnis im Direktfenster (`Strg+G`) und in `%TEMP%\ninja_test_results.txt`. Weiterhin nur 117 Tests deutet auf einen alten oder unvollständig aktualisierten Runner hin. Die Tests arbeiten mit Fakes; Protokollmeldungen über simulierte Fehler gehören zu den Negativfällen.
+**Self-test:** in `TestRunner`, place the cursor inside `RunAllTests` and press `F5`, or run `TestRunner.RunAllTests` in the Immediate window. Expect **303 passed tests, 0 failures** for this revision. Results appear in the Immediate window (`Ctrl+G`) and `%TEMP%\ninja_test_results.txt`. A result of only 117 tests indicates an old or incomplete runner. Fakes simulate failures deliberately; corresponding log messages belong to negative test cases.
 
-**Separate Outlook-Integrationstests:** `IntegrationRunner.RunIntegrationTests` ausschließlich mit der lokalen Test-PST `NinjaTest` ausführen. Es sind **21 Tests** registriert; dies ist ein eigener Lauf und nicht Teil der 298 Unit-Tests. Ergebnis in `%TEMP%\ninja_integration_results.txt`.
+**Separate Outlook integration tests:** run `IntegrationRunner.RunIntegrationTests` only against the local `NinjaTest` PST. There are **21 registered tests**, separate from the 303 unit tests. Results go to `%TEMP%\ninja_integration_results.txt`.
 
-`TestRunner.RunLiveTests` ist ein separater Opt-in-Aufruf mit echter NinjaOne-Verbindung und gehört nicht zum Self-Test.
-## 11. Was bewusst noch fehlt
+`TestRunner.RunLiveTests` is a separate opt-in command using a real NinjaOne connection. It is not part of the self-test.
 
-- Noch keine echten Entscheidungen im Audit-Log: Der Bericht wird erst durch Bestätigen, Ablehnen und manuelles Zuordnen aussagekräftig.
-- Die Dialoge selbst (Formular und Fenster) und alles, was Outlook-Typen benutzt, wurden hier nicht in Outlook ausgeführt. Die Logik dahinter ist headless getestet, das Formular wurde in Excel erzeugt und mit simuliertem Anklicken geprüft.
+## 11. Remaining acceptance work
 
-## 12. Falls sich ReviewForm.frm nicht importieren lässt
+- Reports become useful when there are enough explicit accept/reject decisions and manual assignments. Evaluate the installation's actual audit data before drawing conclusions.
+- Headless logic tests and simulated form clicks in Excel do not establish actual Outlook dialog or adapter acceptance. Complete the outstanding checks in the [roadmap](ROADMAP.md) for the installed revision.
 
-Das Formular zu Fuß anlegen (dann bleibt der Rest unverändert, die Logik steht im Code):
-1. Im VBA-Editor *Einfügen > UserForm*, im Eigenschaftenfenster `(Name)` = `ReviewForm` setzen.
-2. Sechs Steuerelemente anlegen und genau so benennen: `lblInfo` (Bezeichnung), `lstProposals` (Listenfeld, `ListStyle` = 1 *fmListStyleOption*, `MultiSelect` = 1 *fmMultiSelectMulti*), `btnSelectAll`, `btnAccept`, `btnReject`, `btnClose` (Schaltflächen). Die Beschriftungen setzt der Code beim Öffnen.
-3. Doppelklick auf das Formular (Codefenster), den gesamten Inhalt durch den Text aus `forms\ReviewForm.code.txt` ersetzen.
-4. Neu erzeugen lässt sich die Datei jederzeit mit `tools\New-ReviewForm.ps1`.
+## 12. Create ReviewForm manually if import fails
 
-Wer lieber ganz ohne Formular arbeitet: `REVIEW_DIALOG = 1` in `TicketConfig` (einzelne Fenster).
+1. In the VBA editor, choose **Insert > UserForm** and set `(Name)` to `ReviewForm`.
+2. Create six controls with these exact names: `lblInfo` (Label), `lstProposals` (ListBox, `ListStyle = 1` / `fmListStyleOption`, `MultiSelect = 1` / `fmMultiSelectMulti`), and `btnSelectAll`, `btnAccept`, `btnReject`, `btnClose` (CommandButtons). Code sets their captions when the form opens.
+3. Double-click the form to open its code window and replace its contents with `forms\ReviewForm.code.txt`.
+4. Regenerate the exported form if needed using `tools\New-ReviewForm.ps1`.
+
+For runtime use without a form, set `REVIEW_DIALOG = 1` in `TicketConfig`. Form tests still require `ReviewForm`.
