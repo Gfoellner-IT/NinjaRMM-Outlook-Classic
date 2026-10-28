@@ -1,0 +1,41 @@
+[
+  {
+    "id": 3,
+    "appUserContactUid": null,
+    "appUserContactId": null,
+    "appUserContactType": null,
+    "type": "SAVE",
+    "body": "",
+    "publicEntry": false,
+    "system": true,
+    "createTime": 1788270906.209405,
+    "changeDiff": {"status": {"new": "Geschlossen", "old": "Offen"}},
+    "automation": {"id": 1000, "name": "Close Tickets Trigger"}
+  },
+  {
+    "id": 2,
+    "appUserContactUid": null,
+    "appUserContactId": null,
+    "appUserContactType": null,
+    "type": "SAVE",
+    "body": "",
+    "publicEntry": false,
+    "system": true,
+    "createTime": 1787665335.253304,
+    "changeDiff": {"status": {"new": "Offen", "old": "Neu"}},
+    "automation": {"id": 1006, "name": "Set ticket status to open"}
+  },
+  {
+    "id": 1,
+    "appUserContactUid": "00000000-0000-0000-0000-000000000001",
+    "appUserContactId": 1,
+    "appUserContactType": "END_USER",
+    "type": "SAVE",
+    "body": "",
+    "publicEntry": true,
+    "system": false,
+    "createTime": 1787660000.000000,
+    "changeDiff": {"status": {"new": "Neu", "old": null}},
+    "automation": null
+  }
+]

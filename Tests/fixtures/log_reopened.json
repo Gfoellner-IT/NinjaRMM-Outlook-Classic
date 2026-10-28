@@ -1,0 +1,30 @@
+[
+  {
+    "id": 5,
+    "type": "SAVE",
+    "createTime": 1791400000.500000,
+    "changeDiff": {"status": {"new": "Geschlossen", "old": "Offen"}},
+    "automation": null
+  },
+  {
+    "id": 4,
+    "type": "SAVE",
+    "createTime": 1791300000.250000,
+    "changeDiff": {"status": {"new": "Offen", "old": "Geschlossen"}},
+    "automation": null
+  },
+  {
+    "id": 3,
+    "type": "SAVE",
+    "createTime": 1791200000.125000,
+    "changeDiff": {"status": {"new": "Geschlossen", "old": "Neu"}},
+    "automation": null
+  },
+  {
+    "id": 1,
+    "type": "SAVE",
+    "createTime": 1791100000.000000,
+    "changeDiff": {"status": {"new": "Neu", "old": null}},
+    "automation": null
+  }
+]

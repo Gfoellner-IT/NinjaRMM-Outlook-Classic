@@ -1,0 +1,23 @@
+{
+  "id": 20101,
+  "version": 3,
+  "nodeId": null,
+  "clientId": 1,
+  "locationId": null,
+  "assignedAppUserId": null,
+  "requesterUid": "00000000-0000-0000-0000-000000000001",
+  "subject": "Example open ticket",
+  "status": {"name": "OPEN", "displayName": "Offen", "parentId": null, "statusId": 2000},
+  "type": "PROBLEM",
+  "priority": "NONE",
+  "severity": "MAJOR",
+  "ticketFormId": 1,
+  "source": "END_USER",
+  "tags": [],
+  "ccList": {"uids": null, "emails": []},
+  "createTime": 1787665335.253304,
+  "deleted": false,
+  "attributeValues": [],
+  "additionalAssignedTechnicianIds": [],
+  "followupTime": null
+}

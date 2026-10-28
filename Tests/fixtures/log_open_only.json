@@ -1,0 +1,16 @@
+[
+  {
+    "id": 2,
+    "type": "SAVE",
+    "createTime": 1791295000.000000,
+    "changeDiff": {"status": {"new": "Offen", "old": "Neu"}},
+    "automation": null
+  },
+  {
+    "id": 1,
+    "type": "SAVE",
+    "createTime": 1791294817.345961,
+    "changeDiff": {"status": {"new": "Neu", "old": null}},
+    "automation": {"id": 1006, "name": "Set ticket status to open"}
+  }
+]

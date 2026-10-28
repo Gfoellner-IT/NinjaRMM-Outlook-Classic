@@ -1,0 +1,16 @@
+[
+  {
+    "id": 2,
+    "type": "SAVE",
+    "createTime": 1791295288.695002,
+    "changeDiff": {"status": {"new": "Closed", "old": "Open"}},
+    "automation": null
+  },
+  {
+    "id": 1,
+    "type": "SAVE",
+    "createTime": 1791294817.345961,
+    "changeDiff": {"status": {"new": "New", "old": null}},
+    "automation": null
+  }
+]

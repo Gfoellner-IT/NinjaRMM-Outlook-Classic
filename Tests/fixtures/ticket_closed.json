@@ -1,0 +1,23 @@
+{
+  "id": 20102,
+  "version": 5,
+  "nodeId": null,
+  "clientId": 1,
+  "locationId": null,
+  "assignedAppUserId": 100,
+  "requesterUid": "00000000-0000-0000-0000-000000000001",
+  "subject": "Example",
+  "status": {"name": "CLOSED", "displayName": "Geschlossen", "parentId": null, "statusId": 6000},
+  "type": "PROBLEM",
+  "priority": "NONE",
+  "severity": "MAJOR",
+  "ticketFormId": 1,
+  "source": "END_USER",
+  "tags": ["ExampleTag"],
+  "ccList": {"uids": null, "emails": []},
+  "createTime": 1791294817.345961,
+  "deleted": false,
+  "attributeValues": [],
+  "additionalAssignedTechnicianIds": [101, 102],
+  "followupTime": null
+}

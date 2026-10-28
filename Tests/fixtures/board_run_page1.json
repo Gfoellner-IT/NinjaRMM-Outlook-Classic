@@ -1,0 +1,7 @@
+{
+  "data": [
+    {"id": 301, "summary": "Example printer problem in the warehouse", "status": {"statusId": 2000, "displayName": "Offen"}, "organization": "Example Org", "requester": "Example User", "source": "EMAIL", "tags": []},
+    {"id": 302, "summary": "AW: TICKET (B\u00fcro - AT) / Example subject with prefix", "status": {"statusId": 1000, "displayName": "Neu"}, "organization": "Example Org", "requester": "Example User", "source": "HELP_REQUEST", "tags": []}
+  ],
+  "metadata": {"lastCursorId": 2, "filters": null}
+}

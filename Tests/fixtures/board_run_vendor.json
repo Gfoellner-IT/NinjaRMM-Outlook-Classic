@@ -1,0 +1,8 @@
+{
+  "data": [
+    {"id": 401, "summary": "CSM | [TicketNr. 900000101] - Example vendor ticket", "status": {"statusId": 2000, "displayName": "Offen"}, "organization": "Example Org", "requester": "Example User", "source": "TECHNICIAN", "tags": ["Example"]},
+    {"id": 402, "summary": "Older ticket for [TicketNr. 900000101]", "status": {"statusId": 6000, "displayName": "Geschlossen"}, "organization": "Example Org", "requester": "Example User", "source": "EMAIL", "tags": []},
+    {"id": 403, "summary": "Unrelated ticket the filter should not have returned", "status": {"statusId": 2000, "displayName": "Offen"}, "organization": "Example Org", "requester": "Example User", "source": "EMAIL", "tags": []}
+  ],
+  "metadata": {"lastCursorId": 3, "filters": null}
+}

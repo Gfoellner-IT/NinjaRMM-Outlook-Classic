@@ -1,0 +1,6 @@
+{
+  "data": [
+    {"id": 303, "summary": "CSM | [TicketNr. 900000101] - Example vendor ticket", "status": {"statusId": 5000, "displayName": "Aufgeloest"}, "organization": "Example Org", "requester": "Example User", "source": "TECHNICIAN", "tags": ["Example"]}
+  ],
+  "metadata": {"lastCursorId": 3, "filters": null}
+}

@@ -1,0 +1,9 @@
+# VBA export files are stored with CRLF line endings. Git must not convert them,
+# otherwise the import into the VBA editor breaks. Check with tools\Test-VbaFiles.ps1.
+*.bas -text
+*.cls -text
+*.frm -text
+*.frx binary
+
+# Fixtures are the source for the generated Tests\Fixtures.bas.
+*.json text eol=lf

@@ -1,0 +1,16 @@
+[
+  {
+    "id": 2,
+    "type": "DELETE",
+    "createTime": 1791500000.750000,
+    "changeDiff": {},
+    "automation": null
+  },
+  {
+    "id": 1,
+    "type": "SAVE",
+    "createTime": 1791100000.000000,
+    "changeDiff": {"status": {"new": "Neu", "old": null}},
+    "automation": null
+  }
+]

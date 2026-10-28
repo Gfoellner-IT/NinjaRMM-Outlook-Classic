@@ -1,0 +1,10 @@
+# Local .NET build and Visual Studio state
+.vs/
+**/bin/
+**/obj/
+artifacts/
+*.csproj.user
+
+# Private non-secret installation configuration
+.local/
+*.local.ini

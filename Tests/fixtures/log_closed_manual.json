@@ -1,0 +1,54 @@
+[
+  {
+    "id": 4,
+    "appUserContactUid": "00000000-0000-0000-0000-0000000000a1",
+    "appUserContactId": 100,
+    "appUserContactType": "TECHNICIAN",
+    "type": "SAVE",
+    "body": "",
+    "publicEntry": false,
+    "system": false,
+    "createTime": 1791295288.695002,
+    "changeDiff": {"status": {"new": "Geschlossen", "old": "Neu"}},
+    "automation": null
+  },
+  {
+    "id": 3,
+    "appUserContactUid": null,
+    "appUserContactId": null,
+    "appUserContactType": null,
+    "type": "SAVE",
+    "body": "",
+    "publicEntry": false,
+    "system": true,
+    "createTime": 1791295288.680079,
+    "changeDiff": {"related": [{"new": [20110], "old": []}]},
+    "automation": null
+  },
+  {
+    "id": 2,
+    "appUserContactUid": "00000000-0000-0000-0000-0000000000a1",
+    "appUserContactId": 100,
+    "appUserContactType": "TECHNICIAN",
+    "type": "SAVE",
+    "body": "",
+    "publicEntry": false,
+    "system": false,
+    "createTime": 1791295226.616701,
+    "changeDiff": {"tags": {"new": ["ExampleTag"], "old": []}, "assignedAppUserId": {"new": {"name": "Technician A"}, "old": null}},
+    "automation": null
+  },
+  {
+    "id": 1,
+    "appUserContactUid": "00000000-0000-0000-0000-000000000001",
+    "appUserContactId": 1,
+    "appUserContactType": "END_USER",
+    "type": "SAVE",
+    "body": "",
+    "publicEntry": true,
+    "system": false,
+    "createTime": 1791294817.345961,
+    "changeDiff": {"type": {"new": "PROBLEM", "old": null}, "status": {"new": "Neu", "old": null}, "summary": {"new": "Example", "old": null}},
+    "automation": null
+  }
+]

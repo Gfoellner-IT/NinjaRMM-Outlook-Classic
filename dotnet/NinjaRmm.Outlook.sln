@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NinjaRmm.Outlook.Core", "NinjaRmm.Outlook.Core\NinjaRmm.Outlook.Core.csproj", "{65B28F7D-A5CA-4EB5-9548-CDA646659B39}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NinjaRmm.Outlook.Core.Tests", "NinjaRmm.Outlook.Core.Tests\NinjaRmm.Outlook.Core.Tests.csproj", "{D9D48564-C754-4CBC-B145-A438692D5207}"
+EndProject
+Global
+  GlobalSection(SolutionConfigurationPlatforms) = preSolution
+    Debug|Any CPU = Debug|Any CPU
+    Release|Any CPU = Release|Any CPU
+  EndGlobalSection
+  GlobalSection(ProjectConfigurationPlatforms) = postSolution
+    {65B28F7D-A5CA-4EB5-9548-CDA646659B39}.Debug|Any CPU.ActiveCfg = Debug|AnyCPU
+    {65B28F7D-A5CA-4EB5-9548-CDA646659B39}.Debug|Any CPU.Build.0 = Debug|AnyCPU
+    {65B28F7D-A5CA-4EB5-9548-CDA646659B39}.Release|Any CPU.ActiveCfg = Release|AnyCPU
+    {65B28F7D-A5CA-4EB5-9548-CDA646659B39}.Release|Any CPU.Build.0 = Release|AnyCPU
+    {D9D48564-C754-4CBC-B145-A438692D5207}.Debug|Any CPU.ActiveCfg = Debug|AnyCPU
+    {D9D48564-C754-4CBC-B145-A438692D5207}.Debug|Any CPU.Build.0 = Debug|AnyCPU
+    {D9D48564-C754-4CBC-B145-A438692D5207}.Release|Any CPU.ActiveCfg = Release|AnyCPU
+    {D9D48564-C754-4CBC-B145-A438692D5207}.Release|Any CPU.Build.0 = Release|AnyCPU
+  EndGlobalSection
+EndGlobal

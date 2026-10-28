@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+    <ProjectGuid>{D9D48564-C754-4CBC-B145-A438692D5207}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>NinjaRmm.Outlook.Core.Tests</RootNamespace>
+    <AssemblyName>NinjaRmm.Outlook.Core.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup><Reference Include="System" /><Reference Include="System.Core" /></ItemGroup>
+  <ItemGroup><Compile Include="Program.cs" /></ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NinjaRmm.Outlook.Core\NinjaRmm.Outlook.Core.csproj">
+      <Project>{65B28F7D-A5CA-4EB5-9548-CDA646659B39}</Project><Name>NinjaRmm.Outlook.Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
